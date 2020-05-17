@@ -1,0 +1,46 @@
+
+body {
+    font-family: 'San Francisco', Roboto, 'Segoe UI', 'Helvetica Neue',sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+ul.tabs {
+    list-style: none;
+    margin: 0;
+    padding: 0
+}
+ul.tabs li {
+    display: inline-block;
+}
+ul.tabs li span {
+    display: inline-block;
+    cursor: pointer;
+    padding: 5px 25px;
+    position: relative;
+    font-weight: bold;
+}
+
+ul.tabs li span.active {
+    background: rgb(10, 77, 104);
+    color: white;
+}
+
+.header {
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: rgb(212, 212, 212);
+}
+
+.main-view {
+    padding-top: 55px;
+}

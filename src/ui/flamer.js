@@ -100,6 +100,7 @@ function color(name) {
 
 export function generateFrameRects(currentFrame) {
     const frameData = {
+        rootFrame: currentFrame,
         rects: [],
     };
 
