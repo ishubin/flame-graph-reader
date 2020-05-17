@@ -91,6 +91,12 @@ export function parseProfilingLog(log) {
     return rootFrame;
 }
 
+function color(name) {
+    let hue = parseInt(Math.floor(Math.random()*50));
+    
+    return 'hsl(' + hue + ', 93%, 61%)';
+}
+
 
 export function generateFrameRects(currentFrame) {
     const frameData = {
@@ -115,7 +121,8 @@ export function generateFrameRects(currentFrame) {
             parentId: parentFrame ? parentFrame.id: null,
             w       : frame.samples/maxSamples,
             x       : offset,
-            d       : frame.depth
+            d       : frame.depth,
+            color   : color(frame.name)
         };
         frame.x = offset;
         frameData.rects.push(rect);

@@ -123,7 +123,7 @@ something else 4
                 x2 = width;
             }
 
-            ctx.fillStyle = 'rgba(255, 200, 230, 1.0)';
+            ctx.fillStyle = rect.color;
             ctx.fillRect(x, y, x2-x, this.frameHeight);
 
             ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
