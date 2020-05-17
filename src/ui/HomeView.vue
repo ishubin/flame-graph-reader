@@ -102,17 +102,6 @@ something else 4
                 for (let i = 0; i < this.frameData.rects.length; i++) {
                     this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
                 }
-                // this.perfObjectCount = this.frameData.rects.length;
-
-
-                // let counter = 0;
-                // const x1 = - this.offsetX;
-                // const x2 = 1/ this.zoomX - this.offsetX;
-                // grid.lookup(x1, this.offsetY / this.frameHeight, x2-x1, this.canvasHeight / this.frameHeight, rect => {
-                //     this.drawFrameRect(ctx, rect, width, height);
-                //     counter += 1;
-                // });
-                // this.perfObjectCount = counter;
             });
         },
 
@@ -121,13 +110,24 @@ something else 4
             if (y < 0 || y > height) {
                 return;
             }
-            const x = Math.floor(width * (rect.x + this.offsetX) * this.zoomX);
-            const w = Math.floor(rect.w * width * this.zoomX);
+            let x = Math.floor(width * (rect.x + this.offsetX) * this.zoomX);
+            let x2 = x + Math.floor(rect.w * width * this.zoomX);
+
+            if (x2 < 0 || x > width)  {
+                return;
+            }
+            if (x < 0) {
+                x = 0;
+            }
+            if (x2 > width) {
+                x2 = width;
+            }
+
             ctx.fillStyle = 'rgba(255, 200, 230, 1.0)';
-            ctx.fillRect(x+1, y+1, w-1, this.frameHeight-1);
+            ctx.fillRect(x, y, x2-x, this.frameHeight);
 
             ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
-            ctx.fillText(rect.name, x + 4, y + 14, w - 8);
+            ctx.fillText(rect.name, x + 4, y + 14, x2 - x - 8);
         },
 
         zoomOut() {
