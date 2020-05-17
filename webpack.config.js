@@ -6,8 +6,8 @@ module.exports = {
     // Where should the compiled file go?
     output: {
         path: path.resolve(__dirname, 'dist'),
-        publicPath: 'dist/schemio-ui.js',
-        filename: 'schemio-ui.js'
+        publicPath: 'dist/flamer-ui.js',
+        filename: 'flamer-ui.js'
     },
     resolve: {
         alias: {
