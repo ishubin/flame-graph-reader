@@ -5,7 +5,7 @@
             <a href="#" @click="zoomOut()">Zoom out</a>
             <input type="file" @change="onFileChange"/> {{perf}} {{perfObjectCount}}
         </div>
-        <canvas ref="canvas" width="1200" height="700" style="border: 1px solid grey" @click="onCanvasClick"></canvas>
+        <canvas ref="canvas" width="1200" height="700" style="border: 1px solid grey" @dblclick="onCanvasDoubleClick"></canvas>
     </div>
 </template>
 
@@ -45,6 +45,8 @@ something else 4
             maxHeight: 0,
             perf: 0,
             perfObjectCount: 0,
+
+            backgroundColor: 'hsl(205, 27%, 23%)',
 
             canvasWidth: 100,
             canvasHeight: 100
@@ -94,9 +96,14 @@ something else 4
                 this.canvasWidth = width;
                 this.canvasHeight = height;
 
-                ctx.clearRect(0, 0, width, height);
+                // ctx.clearRect(0, 0, width, height);
+
+                ctx.rect(0, 0, width, height);
+                ctx.fillStyle = this.backgroundColor;
+                ctx.fill();
+
                 ctx.strokeStyle = 'rgba(0, 0, 0, 1.0)';
-                ctx.font = '12pt Calibri';
+                ctx.font = '14px Courier new';
 
 
                 for (let i = 0; i < this.frameData.rects.length; i++) {
@@ -126,8 +133,17 @@ something else 4
             ctx.fillStyle = rect.color;
             ctx.fillRect(x, y, x2-x, this.frameHeight);
 
-            ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
-            ctx.fillText(rect.name, x + 4, y + 14, x2 - x - 8);
+
+            let w = x2 - x;
+            let name = rect.name;
+            if (w > 50 && name.length > 0) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
+                const maxSymbols = parseInt(Math.floor(w / 10));
+                if (maxSymbols < name.length) {
+                    name = name.substring(0, maxSymbols) + '...';
+                }
+                ctx.fillText(name, x + 4, y + 14, w);
+            }
         },
 
         zoomOut() {
@@ -136,7 +152,7 @@ something else 4
             this.render();
         },
 
-        onCanvasClick(event) {
+        onCanvasDoubleClick(event) {
             const mx = event.offsetX;
             const my = event.offsetY;
             const x = mx / (this.canvasWidth * this.zoomX) - this.offsetX;
