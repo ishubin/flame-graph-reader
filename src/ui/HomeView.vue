@@ -2,6 +2,7 @@
     <div>
         <div class="middle-content">
             Hello
+            <a href="#" @click="zoomOut()">Zoom out</a>
             <input type="file" @change="onFileChange"/> {{perf}} {{perfObjectCount}}
         </div>
         <canvas ref="canvas" width="1200" height="700" style="border: 1px solid grey" @click="onCanvasClick"></canvas>
@@ -12,10 +13,7 @@
 import {parseProfilingLog, generateFrameRects} from './flamer';
 import {createGridFromRects} from './grid';
 
-
-
 let grid = null;
-
 
 function measurePerformance(funcName, callback) {
     const timeStart = window.performance.now();
@@ -29,14 +27,12 @@ export default {
 com.example.Main.main;com.exmaple.Main.test 1
 com.example.Main.main;com.exmaple.Main.test;java.lang.String.format 2
 a;b;we;q 3
-a;b;c;v;d;d;af;f;as;s;a;a;s;f;a;a;f;a;asf;asf;asf;asf;asf;qwrwq;re;qwe;qwe;qwe;qwe;wqe;qwe;eq;wqe;w;ew;qwe;wqe;e;we;wew;eqwe;qwe;wqe;wqe;qwe;qwe;w;qe;a;d;as;da;ad;ad;asd;asda;sdas;da;dqwe;q;we;w 6
+a;b;c;v;d;d;af;f;as;s;a;a;s;f;a;a;f;a;asf;asf;asf;asf;asf;qwrwq;re;qwe;qwe;qwe;qwe;wqe;qwe;eq;wqe;w;ew;qwe;wqe;e;we;wew;eqwe;qwe;wqe;wqe;qwe;qwe;w;qe;a;d;as;da;ad;ad;asd;asda;sdas;da;dqwe;q;we;w;end 6
 something else 4
         `);
-        this.$refs.canvas.addEventListener('mousewheel', this.onMouseWheel);
     },
 
     beforeDestroy() {
-        this.$refs.canvas.removeEventListener('mousewheel', this.onMouseWheel);
     },
 
     data() {
@@ -45,7 +41,6 @@ something else 4
             frameData: null,
             frameHeight: 20,
             offsetX: 0.0,
-            offsetY: 0,
             zoomX: 1.0,
             maxHeight: 0,
             perf: 0,
@@ -83,7 +78,7 @@ something else 4
                     maxDepth = depth;
                 }
             }
-            this.maxHeight = Math.max(0, maxDepth * this.frameHeight - this.$refs.canvas.height);
+            this.maxHeight = (maxDepth + 1) * this.frameHeight;
             grid = createGridFromRects(this.frameData.rects, maxDepth);
             this.render();
         },
@@ -91,7 +86,11 @@ something else 4
         render() {
             this.perf = measurePerformance('render', () => {
                 const ctx = this.$refs.canvas.getContext('2d');
-                const {width, height} = this.$refs.canvas.getBoundingClientRect();
+                const width = this.$refs.canvas.getBoundingClientRect().width;
+                this.$refs.canvas.height = this.maxHeight;
+                ctx.canvas.height = this.maxHeight;
+                const height = this.maxHeight;
+
                 this.canvasWidth = width;
                 this.canvasHeight = height;
 
@@ -99,26 +98,26 @@ something else 4
                 ctx.strokeStyle = 'rgba(0, 0, 0, 1.0)';
                 ctx.font = '12pt Calibri';
 
-                // for (let i = 0; i < this.frameData.rects.length; i++) {
-                //     this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
-                // }
+
+                for (let i = 0; i < this.frameData.rects.length; i++) {
+                    this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
+                }
                 // this.perfObjectCount = this.frameData.rects.length;
 
 
-                const x1 = - this.offsetX;
-                const x2 = 1/ this.zoomX - this.offsetX;
-
-                let counter = 0;
-                grid.lookup(x1, this.offsetY / this.frameHeight, x2-x1, this.canvasHeight / this.frameHeight, rect => {
-                    this.drawFrameRect(ctx, rect, width, height);
-                    counter += 1;
-                });
-                this.perfObjectCount = counter;
+                // let counter = 0;
+                // const x1 = - this.offsetX;
+                // const x2 = 1/ this.zoomX - this.offsetX;
+                // grid.lookup(x1, this.offsetY / this.frameHeight, x2-x1, this.canvasHeight / this.frameHeight, rect => {
+                //     this.drawFrameRect(ctx, rect, width, height);
+                //     counter += 1;
+                // });
+                // this.perfObjectCount = counter;
             });
         },
 
         drawFrameRect(ctx, rect, width, height) {
-            const y = Math.floor(height - (rect.d + 1) * this.frameHeight) + this.offsetY;
+            const y = Math.floor(height - (rect.d + 1) * this.frameHeight);
             if (y < 0 || y > height) {
                 return;
             }
@@ -131,29 +130,17 @@ something else 4
             ctx.fillText(rect.name, x + 4, y + 14, w - 8);
         },
 
-        onMouseWheel(event) {
-            event.preventDefault();
-            let movedOffset = this.offsetY + event.deltaY;
-            if (movedOffset > this.maxHeight) {
-                movedOffset = this.maxHeight;
-            }
-            if (movedOffset < 0) {
-                movedOffset = 0;
-            }
-
-            if (this.offsetY !== movedOffset) {
-                this.offsetY = movedOffset;
-                this.render();
-            }
-
-            return false;
+        zoomOut() {
+            this.zoomX = 1.0;
+            this.offsetX = 0.0;
+            this.render();
         },
 
         onCanvasClick(event) {
             const mx = event.offsetX;
             const my = event.offsetY;
             const x = mx / (this.canvasWidth * this.zoomX) - this.offsetX;
-            const y = this.canvasHeight - my + this.offsetY;
+            const y = this.canvasHeight - my;
 
             for (let i = 0; i < this.frameData.rects.length; i++) {
                 const rect = this.frameData.rects[i];
@@ -163,7 +150,6 @@ something else 4
 
                 if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
                     this.zoomX = 1 / rect.w;
-                    this.offsetY = rect.d * this.frameHeight;
                     this.offsetX = -rect.x;
                     this.render();
                     return;
