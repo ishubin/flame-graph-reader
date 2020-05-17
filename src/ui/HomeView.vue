@@ -2,7 +2,7 @@
     <div>
         <div class="middle-content">
             Hello
-            <input type="file" @change="onFileChange"/> {{perf}}
+            <input type="file" @change="onFileChange"/> {{perf}} {{perfObjectCount}}
         </div>
         <canvas ref="canvas" width="1200" height="700" style="border: 1px solid grey" @click="onCanvasClick"></canvas>
     </div>
@@ -10,6 +10,11 @@
 
 <script>
 import {parseProfilingLog, generateFrameRects} from './flamer';
+import {createGridFromRects} from './grid';
+
+
+
+let grid = null;
 
 
 function measurePerformance(funcName, callback) {
@@ -44,6 +49,7 @@ something else 4
             zoomX: 1.0,
             maxHeight: 0,
             perf: 0,
+            perfObjectCount: 0,
 
             canvasWidth: 100,
             canvasHeight: 100
@@ -69,15 +75,16 @@ something else 4
             this.rootFrame = parseProfilingLog(text);
             this.frameData = generateFrameRects(this.rootFrame);
 
-            let maxHeight = 0;
+            let maxDepth = 0;
             for (let i = 0; i < this.frameData.rects.length; i++) {
                 const rect = this.frameData.rects[i];
-                const h = (rect.d + 1) * this.frameHeight;
-                if (h > maxHeight) {
-                    maxHeight = h;
+                const depth = (rect.d + 1);
+                if (depth > maxDepth) {
+                    maxDepth = depth;
                 }
             }
-            this.maxHeight = Math.max(0, maxHeight - this.$refs.canvas.height);
+            this.maxHeight = Math.max(0, maxDepth * this.frameHeight - this.$refs.canvas.height);
+            grid = createGridFromRects(this.frameData.rects, maxDepth);
             this.render();
         },
 
@@ -92,9 +99,21 @@ something else 4
                 ctx.strokeStyle = 'rgba(0, 0, 0, 1.0)';
                 ctx.font = '12pt Calibri';
 
-                for (let i = 0; i < this.frameData.rects.length; i++) {
-                    this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
-                }
+                // for (let i = 0; i < this.frameData.rects.length; i++) {
+                //     this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
+                // }
+                // this.perfObjectCount = this.frameData.rects.length;
+
+
+                const x1 = - this.offsetX;
+                const x2 = 1/ this.zoomX - this.offsetX;
+
+                let counter = 0;
+                grid.lookup(x1, this.offsetY / this.frameHeight, x2-x1, this.canvasHeight / this.frameHeight, rect => {
+                    this.drawFrameRect(ctx, rect, width, height);
+                    counter += 1;
+                });
+                this.perfObjectCount = counter;
             });
         },
 
