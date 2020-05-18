@@ -59,17 +59,20 @@ function createIdGenerator() {
 
 
 
-function enrichFrame(currentFrame, idGenerator) {
+function enrichFrame(currentFrame, idGenerator, parentId) {
     if (!idGenerator) {
         idGenerator = createIdGenerator();
     }
     currentFrame.id = idGenerator.generate();
     currentFrame.selfSamples = currentFrame.samples;
+    if (parentId || parentId === 0) {
+        currentFrame.parentId = parentId;
+    }
 
     for (let childFrameName in currentFrame.childFrames) {
         if (currentFrame.childFrames.hasOwnProperty(childFrameName)) {
             currentFrame.selfSamples -= currentFrame.childFrames[childFrameName].samples;
-            enrichFrame(currentFrame.childFrames[childFrameName], idGenerator);
+            enrichFrame(currentFrame.childFrames[childFrameName], idGenerator, currentFrame.id);
         }
     }
 }
@@ -98,17 +101,47 @@ function color(name) {
 }
 
 
-export function generateFrameRects(currentFrame) {
-    const frameData = {
-        rootFrame: currentFrame,
-        rects: [],
-    };
+class FrameData {
+    constructor(rootFrame, rects, framesMap, nameLookup) {
+        this.rootFrame = rootFrame;
+        this.rects     = rects;
+        this.framesMap = framesMap;
+        this.name      = nameLookup;
+    }
 
+    collectStackTrace(stackId) {
+        if (!stackId) {
+            return '';
+        }
+        const frame = this.framesMap[stackId];
+        if (frame) {
+            return frame.name +'\n' + this.collectStackTrace(frame.parentId);
+        }
+        return '';
+    }
+
+}
+
+
+export function generateFrameData(currentFrame) {
+    const rects = [];
+    const framesMap = {};
+    const nameLookup = {};
+
+
+    const cacheByName = (frame) => {
+        if (!nameLookup.hasOwnProperty(frame.name)) {
+            nameLookup[frame.name] = [];
+        }
+        nameLookup[frame.name].push(frame);
+    };
 
     const maxSamples = currentFrame.samples;
 
     visitFrames(currentFrame, (frame, parentFrame) => {
+        framesMap[frame.id] = frame;
         frame.childOffset = frame.selfSamples/maxSamples;
+        cacheByName(frame);
 
         let offset = 0;
         if (parentFrame) {
@@ -126,8 +159,8 @@ export function generateFrameRects(currentFrame) {
             color   : color(frame.name)
         };
         frame.x = offset;
-        frameData.rects.push(rect);
+        rects.push(rect);
     });
 
-    return frameData;
+    return new FrameData(currentFrame, rects, framesMap, nameLookup);
 }

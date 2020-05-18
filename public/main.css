@@ -5,6 +5,17 @@ body {
     padding: 0;
 }
 
+
+a, a:visited, span.link {
+    color: rgb(40, 82, 129);
+    text-decoration: underline;
+    font-weight: normal;
+    cursor: pointer;
+}
+a:hover, span.link:hover {
+    text-decoration: none;
+}
+
 .hidden {
     display: none;
 }
@@ -17,17 +28,26 @@ ul.tabs {
 ul.tabs li {
     display: inline-block;
 }
-ul.tabs li span {
+ul.tabs .tab {
+    position: relative;
+    background: rgb(198, 200, 201);
     display: inline-block;
     cursor: pointer;
     padding: 5px 25px;
-    position: relative;
     font-weight: bold;
 }
-
-ul.tabs li span.active {
+ul.tabs .tab.active {
     background: rgb(10, 77, 104);
     color: white;
+}
+ul.tabs .tab .tab-close {
+    display: none;
+    position: absolute;
+    left: 5px;
+    top: 4px;
+}
+ul.tabs .tab:hover .tab-close {
+    display: inline-block;
 }
 
 .header {
@@ -43,4 +63,51 @@ ul.tabs li span.active {
 
 .main-view {
     padding-top: 55px;
+}
+
+.flame-graph-details-panel {
+    position: fixed;
+    display: block;
+    overflow: scroll;
+    padding: 5px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    border-top: 1px solid #999;
+    background: #efefef;
+}
+
+pre {
+    margin: 0;
+    padding: 0;
+}
+code.stacktrace {
+    display: block;
+    padding: 10px;
+}
+
+
+table.table {
+    width: 100%;
+}
+table.table thead th {
+    border-bottom: 2px solid #777;
+    text-align: left;
+    font-size: 14px;
+    font-weight: bold;
+}
+table.table tbody td.label {
+    font-size: 14px;
+    font-weight: bold;
+}
+table.table tobdy td {
+    font-size: 14px;
+}
+
+code.oneliner {
+    display: inline-block;
+    background: white;
+    padding: 2px 5px;
+    border-radius: 1px;
 }

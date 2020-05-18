@@ -1,9 +1,45 @@
 <template>
     <div>
         <canvas ref="canvas" width="1200" height="700"
+            style="user-select: none"
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
             ></canvas>
+
+        <div class="flame-graph-details-panel" v-if="selectedFrame.shown">
+            <span class="link" @click="selectedFrame.shown = false">Close</span>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th width="70px">%</th>
+                        <th width="100px">Samples</th>
+                        <th>Frame</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{selectedFrame.rect.w | ratioToPrettyPercentage}}</td>
+                        <td>{{selectedFrame.rect.samples}}</td>
+                        <td><code class="oneliner">{{selectedFrame.rect.name}}</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Stacktrace</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><pre><code class="stacktrace">{{selectedFrame.stackTrace}}</code></pre></td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+        </div>
     </div>
 </template>
 <script>
@@ -32,7 +68,13 @@ export default {
             backgroundColor: 'hsl(205, 27%, 23%)',
 
             canvasWidth: 100,
-            canvasHeight: 100
+            canvasHeight: 100,
+
+            selectedFrame: {
+                shown: false,
+                rect: null,
+                stackTrace: null
+            }
         }
     },
 
@@ -42,14 +84,25 @@ export default {
 
     methods: {
         render() {
-            const ctx = this.$refs.canvas.getContext('2d');
-            const width = this.$refs.canvas.getBoundingClientRect().width;
-            this.$refs.canvas.height = this.maxHeight;
-            ctx.canvas.height = this.maxHeight;
+            const canvas = this.$refs.canvas;
+            const ctx = canvas.getContext('2d');
+
+            const width = window.innerWidth;
             const height = this.maxHeight;
 
             this.canvasWidth = width;
             this.canvasHeight = height;
+
+            // fixing rendering for retina
+            if (window.devicePixelRatio === 2) {
+                canvas.width = width*2;
+                canvas.height = height*2;
+                canvas.style.width = `${width}px`;
+                canvas.style.height = `${height}px`;
+
+                ctx.scale(2, 2);
+            }
+
 
             ctx.fillStyle = this.backgroundColor;
             ctx.rect(0, 0, width, height);
@@ -132,10 +185,28 @@ export default {
 
 
                 if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
-                    console.log('Selected ', rect);
+                    this.selectRect(rect);
+                    return;
                 }
             }
+
+            // if not hit any rect - hide previous
+            this.selectedFrame.shown = false;
         },
+
+        selectRect(rect) {
+            if (this.selectedFrame.rect && this.selectedFrame.rect.id === rect.id) {
+                // deselecting it because it was clicked second time
+                this.selectedFrame.shown = false;
+                this.selectedFrame.rect = null;
+                this.selectedFrame.stackTrace = null;
+                return;
+            }
+            this.selectedFrame.rect = rect;
+            this.selectedFrame.stackTrace = this.frameData.collectStackTrace(rect.id);
+            this.selectedFrame.shown = true;
+        },
+
 
         fromCanvasCoords(mx, my) {
             return {
@@ -144,6 +215,11 @@ export default {
             };
         }
 
+    },
+    filters: {
+        ratioToPrettyPercentage(value) {
+            return `${Math.round(value * 10000) / 100}%`;
+        }
     }
 }
 </script>

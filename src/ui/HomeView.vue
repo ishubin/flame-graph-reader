@@ -1,12 +1,11 @@
 <template>
     <div class="main-view">
         <div class="header">
-            Hello
-            <a href="#" @click="zoomOut()">Zoom out</a>
             <input type="file" @change="onFileChange"/> 
             <ul class="tabs">
-                <li v-for="(flameGraph, flameGraphIndex) in flameGraphs">
-                    <span class="tab" :class="{'active': flameGraphIndex === activeReportIndex}" @click="activeReportIndex = flameGraphIndex">{{flameGraph.name}}</span>
+                <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}" @click="activeReportIndex = flameGraphIndex" v-for="(flameGraph, flameGraphIndex) in flameGraphs">
+                    <span class="tab-close" @click="closeFlameGraph(flameGraphIndex)">&#x2716;</span>
+                    <span>{{flameGraph.name}}</span>
                 </li>
             </ul>
         </div>
@@ -20,7 +19,7 @@
 </template>
 
 <script>
-import {parseProfilingLog, generateFrameRects} from './flamer';
+import {parseProfilingLog, generateFrameData} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 
 
@@ -66,7 +65,7 @@ something else 4
         loadReport(name, text) {
             this.reportCounter += 1;
             const rootFrame = parseProfilingLog(text);
-            const frameData = generateFrameRects(rootFrame);
+            const frameData = generateFrameData(rootFrame);
 
             this.flameGraphs.push({
                 name: name,
@@ -75,6 +74,15 @@ something else 4
             });
             this.activeReportIndex = this.flameGraphs.length - 1;
         },
+
+        closeFlameGraph(index) {
+            if (index < this.flameGraphs.length) {
+                if (index <= this.activeReportIndex) {
+                    this.activeReportIndex -= 1;
+                }
+                this.flameGraphs.splice(index, 1);
+            }
+        }
     },
 }
 </script>

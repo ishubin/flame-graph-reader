@@ -5,7 +5,9 @@ h3. Features
 - [ ] Selecting frames
 - [ ] Zoom by mouse (drawing rect on the screen to which it should zoom horizontally)
 - [ ] Search
+- [ ] Probes (based on search). So that user can specify multiple search criteries and switch between profilers to see how they change
 - [ ] Compare two flame graphs (show in tabs + diff view)
 - [ ] Various color themes
 - [ ] Invert stack traces
 - [ ] Rename flame graph tab
+- [ ] Repair stacks
