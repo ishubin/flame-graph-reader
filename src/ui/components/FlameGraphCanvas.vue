@@ -1,51 +1,51 @@
 <template>
     <div>
         <canvas ref="canvas" width="1200" height="700"
-            style="user-select: none"
+            style="user-select: none; margin-bottom: 70px"
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
             ></canvas>
 
-        <div class="flame-graph-details-panel" v-if="selectedFrame.shown">
-            <span class="link" @click="selectedFrame.shown = false">Close</span>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th width="70px">%</th>
-                        <th width="100px">Samples</th>
-                        <th>Frame</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{selectedFrame.rect.w | ratioToPrettyPercentage}}</td>
-                        <td>{{selectedFrame.rect.samples}}</td>
-                        <td><code class="oneliner">{{selectedFrame.rect.name}}</code></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="flame-graph-details-panel">
+            <div v-if="selectedFrame.rect">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th width="70px">%</th>
+                            <th width="100px">Samples</th>
+                            <th>Frame</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{selectedFrame.rect.w | ratioToPrettyPercentage}}</td>
+                            <td>{{selectedFrame.rect.samples}}</td>
+                            <td>
+                                <code class="oneliner">{{selectedFrame.rect.name}}</code>
+                                <span class="link link-small link-italic" @click="showStackTraceForRect(selectedFrame.rect)">(Show Stacktrace)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Stacktrace</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><pre><code class="stacktrace">{{selectedFrame.stackTrace}}</code></pre></td>
-                    </tr>
-                </tbody>
-            </table>
+            </div>
 
-
+            <modal name="Stacktrace" v-if="shownStackTrace" @close="shownStackTrace = null">
+                <pre><code class="stacktrace">{{shownStackTrace}}</code></pre>
+            </modal>
         </div>
     </div>
 </template>
+
 <script>
+import Modal from './Modal.vue';
+import {createGridFromRects} from '../grid';
+
 export default {
 
-    props: ['frameData'],
+    components: {Modal},
+
+    props: ['frameData', 'searchKeyword'],
 
     data() {
         let maxDepth = 0;
@@ -60,10 +60,11 @@ export default {
         const frameHeight = 20;
 
         return {
+            grid:           createGridFromRects(this.frameData.rects, maxDepth),
             frameHeight,
-            offsetX: 0.0,
-            zoomX: 1.0,
-            maxHeight: (maxDepth + 1) * frameHeight,
+            offsetX     : 0.0,
+            zoomX       : 1.0,
+            maxHeight   : (maxDepth + 1) * frameHeight,
 
             backgroundColor: 'hsl(205, 27%, 23%)',
 
@@ -71,10 +72,11 @@ export default {
             canvasHeight: 100,
 
             selectedFrame: {
-                shown: false,
-                rect: null,
-                stackTrace: null
-            }
+                rect           : null,
+                stackTrace     : null,
+            },
+
+            shownStackTrace: null
         }
     },
 
@@ -178,35 +180,34 @@ export default {
         onCanvasClick(event) {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
-            for (let i = 0; i < this.frameData.rects.length; i++) {
-                const rect = this.frameData.rects[i];
+            let foundRect = null;
+            this.grid.lookupAtPoint(x, Math.floor(y/this.frameHeight), rect => {
                 const ry1 = rect.d * this.frameHeight;
                 const ry2 = (rect.d + 1) * this.frameHeight;
 
-
                 if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
-                    this.selectRect(rect);
-                    return;
+                    foundRect = rect;
+                    return true; // telling grid lookup that we have found the item
                 }
-            }
+                return false;
+            });
 
-            // if not hit any rect - hide previous
-            this.selectedFrame.shown = false;
+            if (foundRect) {
+                this.selectRect(foundRect);
+            } else {
+                // clicked void, deselecting rect
+                this.selectedFrame.rect = false;
+                this.selectedFrame.stackTrace = null;
+            }
         },
 
         selectRect(rect) {
-            if (this.selectedFrame.rect && this.selectedFrame.rect.id === rect.id) {
-                // deselecting it because it was clicked second time
-                this.selectedFrame.shown = false;
-                this.selectedFrame.rect = null;
-                this.selectedFrame.stackTrace = null;
-                return;
-            }
             this.selectedFrame.rect = rect;
-            this.selectedFrame.stackTrace = this.frameData.collectStackTrace(rect.id);
-            this.selectedFrame.shown = true;
         },
 
+        showStackTraceForRect(rect) {
+            this.shownStackTrace = this.frameData.collectStackTrace(rect.id);
+        },
 
         fromCanvasCoords(mx, my) {
             return {

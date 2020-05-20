@@ -37,13 +37,25 @@ class Grid {
      */
     lookup(x, y, w, h, callback) {
         // for now grid doesn't care about x yet. will implement it later
-
         const rowStart  = clamp(Math.floor(y), 0, this.grid.length - 1);
         const rowEnd    = clamp(Math.floor(y + h), 0, this.grid.length - 1);
 
         for (let row = rowStart; row <= rowEnd; row += 1) {
             for (let i = 0; i < this.grid[row].length; i++) {
-                callback(this.grid[row][i]);
+                if (callback(this.grid[row][i])) {
+                    return;
+                }
+            }
+        }
+    }
+
+    lookupAtPoint(x, y, callback) {
+        // for now grid doesn't care about x yet. will implement it later
+        if (0 <= y && y < this.grid.length) {
+            for (let i = 0; i < this.grid[y].length; i++) {
+                if (callback(this.grid[y][i])) {
+                    return;
+                }
             }
         }
     }

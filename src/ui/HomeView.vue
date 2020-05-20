@@ -1,20 +1,47 @@
 <template>
     <div class="main-view">
         <div class="header">
-            <input type="file" @change="onFileChange"/> 
             <ul class="tabs">
                 <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}" @click="activeReportIndex = flameGraphIndex" v-for="(flameGraph, flameGraphIndex) in flameGraphs">
                     <span class="tab-close" @click="closeFlameGraph(flameGraphIndex)">&#x2716;</span>
                     <span>{{flameGraph.name}}</span>
                 </li>
+                <li class="tab tab-add-new">
+                    <span>&#x2795;</span>
+                    <input type="file" @change="onFileChange"/> 
+                </li>
             </ul>
+
+            <div class="right-tool-bar">
+                <input type="text" placeholder="Search" v-model="searchKeyword"/>
+                <button @click="toggleSearch">Search</button>
+            </div>
         </div>
         <div class="flame-graphs">
             <flame-graph-canvas v-for="(flameGraph, flameGraphIndex) in flameGraphs"
                 :key="`flame-graph-canvas-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
-                :frameData="flameGraph.frameData"/>
+                :frame-data="flameGraph.frameData"
+                :search-keyword="toggledSearchedKeyword"
+                />
         </div>
+
+
+        <transition name="modal" v-if="isLoadingFlameGraph">
+            <div class="modal-mask">
+                <div class="modal-wrapper">
+                    <div class="modal-container" style="width: 300px;">
+                        <div class="modal-header">
+                            <h3>Loading</h3>
+                        </div>
+                        <div class="modal-body">
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -43,7 +70,10 @@ something else 4
         return {
             flameGraphs: [],
             reportCounter: 0,
-            activeReportIndex: 0 
+            activeReportIndex: 0 ,
+            isLoadingFlameGraph: false,
+            searchKeyword: '',
+            toggledSearchedKeyword: ''
         };
     },
 
@@ -63,16 +93,21 @@ something else 4
         },
 
         loadReport(name, text) {
-            this.reportCounter += 1;
-            const rootFrame = parseProfilingLog(text);
-            const frameData = generateFrameData(rootFrame);
+            this.isLoadingFlameGraph = true;
+            
+            setTimeout(() => {
+                this.reportCounter += 1;
+                const rootFrame = parseProfilingLog(text);
+                const frameData = generateFrameData(rootFrame);
 
-            this.flameGraphs.push({
-                name: name,
-                id: this.reportCounter,
-                frameData
-            });
-            this.activeReportIndex = this.flameGraphs.length - 1;
+                this.flameGraphs.push({
+                    name: name,
+                    id: this.reportCounter,
+                    frameData
+                });
+                this.activeReportIndex = this.flameGraphs.length - 1;
+                this.isLoadingFlameGraph = false;
+            }, 50);
         },
 
         closeFlameGraph(index) {
@@ -82,6 +117,10 @@ something else 4
                 }
                 this.flameGraphs.splice(index, 1);
             }
+        },
+
+        toggleSearch() {
+            this.toggledSearchedKeyword = this.searchKeyword;
         }
     },
 }
