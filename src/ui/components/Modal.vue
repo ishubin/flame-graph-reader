@@ -46,7 +46,7 @@ export default {
     data() {
         return {
             safeWidth: this.width || window.innerWidth - 100,
-            safeHeight: this.height || window.innerHeight - 300,
+            safeHeight: this.height || window.innerHeight - 100,
         };
     },
     mounted() {

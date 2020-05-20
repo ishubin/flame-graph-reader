@@ -5,6 +5,7 @@
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
             @mousemove="onCanvasMouseMove"
+            @contextmenu="onRightClick"
             ></canvas>
 
         <div class="flame-graph-details-panel">
@@ -27,23 +28,32 @@
                         </tr>
                     </tbody>
                 </table>
-
             </div>
-
-            <modal name="Stacktrace" v-if="shownStackTrace" @close="shownStackTrace = null">
-                <pre><code class="stacktrace">{{shownStackTrace}}</code></pre>
-            </modal>
         </div>
+
+        <context-menu v-if="contextMenu.shown" 
+            :key="`context-menu-${contextMenu.x}-${contextMenu.y}`"
+            @close="contextMenu.shown = false"
+            @selected="onContextMenuOptionSelected"
+            :x="contextMenu.x"
+            :y="contextMenu.y"
+            :options="contextMenu.options"
+        />
+
+        <modal name="Stacktrace" v-if="shownStackTrace" @close="shownStackTrace = null">
+            <pre><code class="stacktrace">{{shownStackTrace}}</code></pre>
+        </modal>
     </div>
 </template>
 
 <script>
 import Modal from './Modal.vue';
+import ContextMenu from './ContextMenu.vue';
 import {createGridFromRects} from '../grid';
 
 export default {
 
-    components: {Modal},
+    components: {Modal, ContextMenu},
 
     props: ['frameData', 'searchKeyword'],
 
@@ -76,7 +86,15 @@ export default {
             },
 
             zoomedInRect: null,
-            shownStackTrace: null
+            shownStackTrace: null,
+
+            contextMenu: {
+                rect   : null,
+                shown  : false,
+                options: [],
+                x      : 0,
+                y      : 0
+            }
         }
     },
 
@@ -160,6 +178,15 @@ export default {
         zoomOut() {
             this.zoomX = 1.0;
             this.offsetX = 0.0;
+
+            if (this.zoomedInRect) {
+                // reseting previous zoom
+                this.frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
+                    ancestorRect.dimmed = false;
+                });
+            }
+
+            this.zoomedInRect = null;
             this.render();
         },
 
@@ -207,6 +234,47 @@ export default {
         },
 
         onCanvasClick(event) {
+        },
+
+        onRightClick(event) {
+            event.preventDefault();
+            const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
+            const foundRect = this.findRectAtPoint(x, y);
+            if (foundRect) {
+                this.showContextMenuForRect(foundRect, event.clientX, event.clientY);
+            } else {
+                this.contextMenu.shown = false;
+            }
+        },
+
+        showContextMenuForRect(rect, mx, my) {
+            this.contextMenu.rect = rect;
+            this.contextMenu.x = mx;
+            this.contextMenu.y = my;
+            this.contextMenu.options = [{
+                name: "Zoom Into",
+                id: "zoom-into"
+            }, {
+                name: "Zoom Out",
+                id: "zoom-out"
+            }, {
+                name: "Show Stack Trace",
+                id: "show-stack-trace"
+            }];
+
+            this.contextMenu.shown = true;
+        },
+
+        onContextMenuOptionSelected(option) {
+            if (option.id === 'zoom-out') {
+                this.zoomOut();
+            } else if (option.id === 'zoom-into') {
+                this.zoomIntoRect(this.contextMenu.rect);
+            } else if (option.id === 'show-stack-trace' && this.contextMenu.rect) {
+                this.shownStackTrace = this.frameData.collectStackTrace(this.contextMenu.rect.id);
+            }
+
+            this.contextMenu.shown = false;
         },
 
         onCanvasMouseMove(event) {

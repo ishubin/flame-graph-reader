@@ -252,3 +252,31 @@ code.oneliner {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
 }
+
+
+/********************** Context Menu *********************/
+.context-menu {
+    position: fixed;
+    display: inline-block;
+}
+.context-menu ul {
+    display: inline-block;
+    background: #fff;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.context-menu ul li {
+    margin: 0;
+    padding: 0;
+    white-space:nowrap;
+}
+.context-menu ul li span {
+    display: block;
+    padding: 5px 5px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.context-menu ul li span:hover {
+    background: #afd7ee;
+}
