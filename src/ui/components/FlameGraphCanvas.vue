@@ -75,6 +75,7 @@ export default {
                 rect: null
             },
 
+            zoomedInRect: null,
             shownStackTrace: null
         }
     },
@@ -136,7 +137,11 @@ export default {
                 x2 = width;
             }
 
-            ctx.fillStyle = rect.color;
+            if (rect.dimmed) {
+                ctx.fillStyle = `hsla(${rect.color.h}, ${rect.color.s}%, ${rect.color.l}%, 0.2)`;
+            } else {
+                ctx.fillStyle = `hsl(${rect.color.h}, ${rect.color.s}%, ${rect.color.l}%)`;
+            }
             ctx.fillRect(x, y, x2-x, this.frameHeight);
 
 
@@ -158,22 +163,47 @@ export default {
             this.render();
         },
 
+        zoomIntoRect(rect) {
+            if (this.zoomedInRect) {
+                // reseting previous zoom
+                this.frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
+                    ancestorRect.dimmed = false;
+                });
+            }
+            this.frameData.traverseRectAncestors(rect, ancestorRect => {
+                ancestorRect.dimmed = true;
+            });
+
+            this.zoomedInRect = rect;
+
+            this.zoomX = 1 / rect.w;
+            this.offsetX = -rect.x;
+            this.render();
+        },
+
         onCanvasDoubleClick(event) {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
+            const rect = this.findRectAtPoint(x, y);
+            if (rect) {
+                this.zoomIntoRect(rect);
+            }
+        },
 
-            for (let i = 0; i < this.frameData.rects.length; i++) {
-                const rect = this.frameData.rects[i];
+
+        findRectAtPoint(x, y) {
+            let foundRect = null;
+            this.grid.lookupAtPoint(x, Math.floor(y/this.frameHeight), rect => {
                 const ry1 = rect.d * this.frameHeight;
                 const ry2 = (rect.d + 1) * this.frameHeight;
 
-
                 if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
-                    this.zoomX = 1 / rect.w;
-                    this.offsetX = -rect.x;
-                    this.render();
-                    return;
+                    foundRect = rect;
+                    return true; // telling grid lookup that we have found the item so it can stop iterating further
                 }
-            }
+                return false;
+            });
+
+            return foundRect;
         },
 
         onCanvasClick(event) {
@@ -182,18 +212,7 @@ export default {
         onCanvasMouseMove(event) {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
-            let foundRect = null;
-            this.grid.lookupAtPoint(x, Math.floor(y/this.frameHeight), rect => {
-                const ry1 = rect.d * this.frameHeight;
-                const ry2 = (rect.d + 1) * this.frameHeight;
-
-                if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
-                    foundRect = rect;
-                    return true; // telling grid lookup that we have found the item
-                }
-                return false;
-            });
-
+            const foundRect = this.findRectAtPoint(x, y);
             if (foundRect) {
                 this.hoveredFrame.rect = foundRect;
             } else {

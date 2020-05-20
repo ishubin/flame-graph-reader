@@ -106,8 +106,7 @@ export function parseProfilingLog(log) {
 
 function color(name) {
     let hue = parseInt(Math.floor(Math.random()*50));
-    
-    return 'hsl(' + hue + ', 93%, 61%)';
+    return {h: hue, s: 93, l: 61};
 }
 
 
@@ -130,6 +129,31 @@ class FrameData {
         return '';
     }
 
+    findFrameById(id) {
+        return this.framesMap[id];
+    }
+
+    findRectByIndex(idx) {
+        if (0 <= idx && idx < this.rects.length) {
+            return this.rects[idx];
+        }
+        return null;
+    }
+
+    traverseRectAncestors(rect, callback) {
+        const parentFrame = this.findFrameById(rect.parentId);
+        if (!parentFrame) {
+            return;
+        }
+
+        const parentRect = this.findRectByIndex(parentFrame.rectIndex);
+        if (!parentRect) {
+            return;
+        }
+
+        callback(parentRect);
+        this.traverseRectAncestors(parentRect, callback);
+    }
 }
 
 
@@ -169,6 +193,7 @@ export function generateFrameData(currentFrame) {
             color   : color(frame.name)
         };
         frame.x = offset;
+        frame.rectIndex = rects.length;
         rects.push(rect);
     });
 
