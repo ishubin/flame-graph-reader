@@ -4,10 +4,11 @@
             style="user-select: none; margin-bottom: 70px"
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
+            @mousemove="onCanvasMouseMove"
             ></canvas>
 
         <div class="flame-graph-details-panel">
-            <div v-if="selectedFrame.rect">
+            <div v-if="hoveredFrame.rect">
                 <table class="table">
                     <thead>
                         <tr>
@@ -18,11 +19,10 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{{selectedFrame.rect.w | ratioToPrettyPercentage}}</td>
-                            <td>{{selectedFrame.rect.samples}}</td>
+                            <td>{{hoveredFrame.rect.w | ratioToPrettyPercentage}}</td>
+                            <td>{{hoveredFrame.rect.samples}}</td>
                             <td>
-                                <code class="oneliner">{{selectedFrame.rect.name}}</code>
-                                <span class="link link-small link-italic" @click="showStackTraceForRect(selectedFrame.rect)">(Show Stacktrace)</span>
+                                <code class="oneliner">{{hoveredFrame.rect.name}}</code>
                             </td>
                         </tr>
                     </tbody>
@@ -71,9 +71,8 @@ export default {
             canvasWidth: 100,
             canvasHeight: 100,
 
-            selectedFrame: {
-                rect           : null,
-                stackTrace     : null,
+            hoveredFrame: {
+                rect: null
             },
 
             shownStackTrace: null
@@ -178,6 +177,9 @@ export default {
         },
 
         onCanvasClick(event) {
+        },
+
+        onCanvasMouseMove(event) {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
             let foundRect = null;
@@ -193,16 +195,11 @@ export default {
             });
 
             if (foundRect) {
-                this.selectRect(foundRect);
+                this.hoveredFrame.rect = foundRect;
             } else {
-                // clicked void, deselecting rect
-                this.selectedFrame.rect = false;
-                this.selectedFrame.stackTrace = null;
+                // hovered over void, deselecting rect
+                this.hoveredFrame.rect = false;
             }
-        },
-
-        selectRect(rect) {
-            this.selectedFrame.rect = rect;
         },
 
         showStackTraceForRect(rect) {
