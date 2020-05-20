@@ -160,7 +160,7 @@ export default {
             } else {
                 ctx.fillStyle = `hsl(${rect.color.h}, ${rect.color.s}%, ${rect.color.l}%)`;
             }
-            ctx.fillRect(x, y, x2-x, this.frameHeight);
+            ctx.fillRect(x, y, Math.max(1, x2-x), this.frameHeight);
 
 
             let w = x2 - x;
@@ -187,6 +187,19 @@ export default {
             }
 
             this.zoomedInRect = null;
+            this.render();
+        },
+
+        zoomAt(mx, my) {
+            const x1 = Math.max(0, this.fromCanvasCoords(mx - this.canvasWidth/4, my).x);
+            const x2 = Math.min(1, this.fromCanvasCoords(mx + this.canvasWidth/4, my).x);
+            const dx = x2 - x1;
+            if (dx < 0.000001) {
+                return;
+            }
+
+            this.zoomX = 1/dx;
+            this.offsetX = -x1;
             this.render();
         },
 
@@ -239,12 +252,7 @@ export default {
         onRightClick(event) {
             event.preventDefault();
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
-            const foundRect = this.findRectAtPoint(x, y);
-            if (foundRect) {
-                this.showContextMenuForRect(foundRect, event.clientX, event.clientY);
-            } else {
-                this.contextMenu.shown = false;
-            }
+            this.showContextMenuForRect(this.findRectAtPoint(x, y), event.clientX, event.clientY);
         },
 
         showContextMenuForRect(rect, mx, my) {
@@ -252,15 +260,23 @@ export default {
             this.contextMenu.x = mx;
             this.contextMenu.y = my;
             this.contextMenu.options = [{
-                name: "Zoom Into",
-                id: "zoom-into"
-            }, {
+                name: "Zoom",
+                id: "zoom"
+            },{
                 name: "Zoom Out",
                 id: "zoom-out"
-            }, {
-                name: "Show Stack Trace",
-                id: "show-stack-trace"
             }];
+
+            if (rect) {
+                this.contextMenu.options.push({
+                    name: "Zoom Into Frame",
+                    id: "zoom-into-frame"
+                });
+                this.contextMenu.options.push({
+                    name: "Show Stack Trace",
+                    id: "show-stack-trace"
+                });
+            }
 
             this.contextMenu.shown = true;
         },
@@ -268,7 +284,9 @@ export default {
         onContextMenuOptionSelected(option) {
             if (option.id === 'zoom-out') {
                 this.zoomOut();
-            } else if (option.id === 'zoom-into') {
+            } else if (option.id === 'zoom') {
+                this.zoomAt(this.contextMenu.x, this.contextMenu.y);
+            } else if (option.id === 'zoom-into-frame') {
                 this.zoomIntoRect(this.contextMenu.rect);
             } else if (option.id === 'show-stack-trace' && this.contextMenu.rect) {
                 this.shownStackTrace = this.frameData.collectStackTrace(this.contextMenu.rect.id);
