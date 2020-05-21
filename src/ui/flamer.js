@@ -140,6 +140,10 @@ class FrameData {
         return null;
     }
 
+    findRectForFrame(frame) {
+        return this.findRectByIndex(frame.rectIndex);
+    }
+
     traverseRectAncestors(rect, callback) {
         const parentFrame = this.findFrameById(rect.parentId);
         if (!parentFrame) {
@@ -153,6 +157,24 @@ class FrameData {
 
         callback(parentRect);
         this.traverseRectAncestors(parentRect, callback);
+    }
+    
+    /**
+     * Traverses tree of frames starting at the root
+     * @param {Function} callback 
+     */
+    traverseFrames(callback) {
+        this._traverseFrames(this.rootFrame, null, callback);
+    }
+    _traverseFrames(frame, parentFrame, callback) {
+        callback(frame, parentFrame);
+        frame.childFrames.forEach(childFrame => {
+            this._traverseFrames(childFrame, frame, callback);
+        });
+    }
+
+    traverseFramesStartingFrom(frame, callback) {
+        this._traverseFrames(frame, null, callback);
     }
 }
 

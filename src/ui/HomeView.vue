@@ -13,8 +13,9 @@
             </ul>
 
             <div class="right-tool-bar">
-                <input type="text" placeholder="Search" v-model="searchKeyword"/>
-                <button @click="toggleSearch">Search</button>
+                <input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> <label for="chk-inverted">Inverted</label>
+
+                <span class="link" @click="annotationsEditorShown = true">Annotations</span>
             </div>
         </div>
         <div class="flame-graphs">
@@ -22,9 +23,13 @@
                 :key="`flame-graph-canvas-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
                 :frame-data="flameGraph.frameData"
-                :search-keyword="toggledSearchedKeyword"
+                :annotations="annotations"
+                :settings="settings"
                 />
         </div>
+
+
+        <annotations-editor v-if="annotationsEditorShown" :annotations="annotations" @close="annotationsEditorShown = false"/>
 
 
         <transition name="modal" v-if="isLoadingFlameGraph">
@@ -48,15 +53,16 @@
 <script>
 import {parseProfilingLog, generateFrameData} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
+import AnnotationsEditor from './components/AnnotationEditor.vue';
 
 
 export default {
-    components: {FlameGraphCanvas},
+    components: {FlameGraphCanvas, AnnotationsEditor},
 
     mounted() {
         this.loadReport('qwe', `
-com.example.Main.main;com.exmaple.Main.test 1
-com.example.Main.main;com.exmaple.Main.test;java.lang.String.format 2
+com.example.Main.main;com.example.Main.test 1
+com.example.Main.main;com.example.Main.test;java.lang.String.format 2
 a;b;we;q 3
 a;b;c;v;d;d;af;f;as;s;a;a;s;f;a;a;f;a;asf;asf;asf;asf;asf;qwrwq;re;qwe;qwe;qwe;qwe;wqe;qwe;eq;wqe;w;ew;qwe;wqe;e;we;wew;eqwe;qwe;wqe;wqe;qwe;qwe;w;qe;a;d;as;da;ad;ad;asd;asda;sdas;da;dqwe;q;we;w;end 6
 something else 4
@@ -68,12 +74,19 @@ something else 4
 
     data() {
         return {
+            annotations: [{
+                name: 'qwe',
+                regexTerms: ['com', 'asf']
+            }],
+            annotationsEditorShown: false,
+
             flameGraphs: [],
             reportCounter: 0,
             activeReportIndex: 0 ,
             isLoadingFlameGraph: false,
-            searchKeyword: '',
-            toggledSearchedKeyword: ''
+            settings: {
+                inverted: false
+            }
         };
     },
 
@@ -118,10 +131,6 @@ something else 4
                 this.flameGraphs.splice(index, 1);
             }
         },
-
-        toggleSearch() {
-            this.toggledSearchedKeyword = this.searchKeyword;
-        }
     },
 }
 </script>

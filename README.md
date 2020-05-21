@@ -5,7 +5,7 @@ h3. Features
 - [ ] Selecting frames
 - [ ] Zoom by mouse (drawing rect on the screen to which it should zoom horizontally)
 - [ ] Search
-- [ ] Annotate. Use tags that could combine multiple frames (e.g. 'networking', 'mysql', 'cache-lookup' etc.). Allow custom tags
+- [ ] Annotate. Use tags that could combine multiple frames (e.g. 'networking', 'mysql', 'cache-lookup' etc.). Allow custom tags + multiple regex search terms per tag
 - [ ] Probes (based on search or annotations). So that user can specify multiple search criteries and switch between profilers to see how they change
 - [ ] Compare two flame graphs (show in tabs + diff view)
 - [ ] Various color themes
@@ -14,3 +14,4 @@ h3. Features
 - [ ] Repair stacks
 - [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check it cpu efficiency per request
 - [ ] By frame overview table mode.
+- [ ] Render in compact form

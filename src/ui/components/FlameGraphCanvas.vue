@@ -9,26 +9,64 @@
             ></canvas>
 
         <div class="flame-graph-details-panel">
-            <div v-if="hoveredFrame.rect">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th width="70px">%</th>
-                            <th width="100px">Samples</th>
-                            <th>Frame</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{hoveredFrame.rect.w | ratioToPrettyPercentage}}</td>
-                            <td>{{hoveredFrame.rect.samples}}</td>
-                            <td>
-                                <code class="oneliner">{{hoveredFrame.rect.name}}</code>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td width="50%">
+                            <div v-if="hoveredFrame.rect">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th width="70px">%</th>
+                                            <th width="100px">Samples</th>
+                                            <th>Frame</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{hoveredFrame.rect.w | ratioToPrettyPercentage}}</td>
+                                            <td>{{hoveredFrame.rect.samples}}</td>
+                                            <td>
+                                                <code class="oneliner">{{hoveredFrame.rect.name}}</code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                        <td>
+                            <table class="table" v-if="hoveredAnnotationSamples">
+                                <thead>
+                                    <tr>
+                                        <th>Unmatched</th>
+                                        <th v-for="(samples, name) in hoveredAnnotationSamples">{{name}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{calculateUnmatchedSamples(hoveredAnnotationSamples, hoveredAnnotationMaxSamples) | samplesToPercent(hoveredAnnotationMaxSamples)}}</td>
+                                        <td v-for="(samples, name) in hoveredAnnotationSamples">{{samples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table" v-else>
+                                <thead>
+                                    <tr>
+                                        <th>Unmatched</th>
+                                        <th v-for="(samples, name) in annotationSamples">{{name}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{calculateUnmatchedSamples(annotationSamples, annotationMaxSamples) | samplesToPercent(annotationMaxSamples)}}</td>
+                                        <td v-for="(samples, name) in annotationSamples">{{samples | samplesToPercent(annotationMaxSamples) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <context-menu v-if="contextMenu.shown" 
@@ -55,7 +93,7 @@ export default {
 
     components: {Modal, ContextMenu},
 
-    props: ['frameData', 'searchKeyword'],
+    props: ['frameData', 'annotations', 'settings'],
 
     data() {
         let maxDepth = 0;
@@ -94,11 +132,20 @@ export default {
                 options: [],
                 x      : 0,
                 y      : 0
-            }
+            },
+
+            // calculated annotated samples relative to zoomed in rect
+            annotationSamples: {},
+            annotationMaxSamples: 1,
+
+            // calculated annotated samples relative to hovered frame
+            hoveredAnnotationSamples: null,
+            hoveredAnnotationMaxSamples: 1
         }
     },
 
     mounted() {
+        this.annotateFrames();
         this.render();
     },
 
@@ -138,7 +185,10 @@ export default {
         },
 
         drawFrameRect(ctx, rect, width, height) {
-            const y = Math.floor(height - (rect.d + 1) * this.frameHeight);
+            let y = Math.floor(rect.d * this.frameHeight);
+            if (this.settings.inverted) {
+                y = Math.floor(height - (rect.d + 1) * this.frameHeight);
+            }
             if (y < 0 || y > height) {
                 return;
             }
@@ -155,11 +205,16 @@ export default {
                 x2 = width;
             }
 
-            if (rect.dimmed) {
-                ctx.fillStyle = `hsla(${rect.color.h}, ${rect.color.s}%, ${rect.color.l}%, 0.2)`;
+            const rectAlpha = rect.dimmed ? 0.2 : 1.0;
+
+            const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 96 : rect.color.l;
+
+            if (rect.annotated) {
+                ctx.fillStyle = `hsl(250, 50%, ${light}%, ${rectAlpha})`;
             } else {
-                ctx.fillStyle = `hsl(${rect.color.h}, ${rect.color.s}%, ${rect.color.l}%)`;
+                ctx.fillStyle = `hsl(${rect.color.h}, ${rect.color.s}%, ${light}%, ${rectAlpha})`;
             }
+
             ctx.fillRect(x, y, Math.max(1, x2-x), this.frameHeight);
 
 
@@ -187,6 +242,7 @@ export default {
             }
 
             this.zoomedInRect = null;
+            this.toggleAnnotationSamples();
             this.render();
         },
 
@@ -218,6 +274,8 @@ export default {
 
             this.zoomX = 1 / rect.w;
             this.offsetX = -rect.x;
+
+            this.toggleAnnotationSamples();
             this.render();
         },
 
@@ -299,11 +357,32 @@ export default {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
             const foundRect = this.findRectAtPoint(x, y);
+            const previousHoveredRect = this.hoveredFrame.rect;
+
             if (foundRect) {
                 this.hoveredFrame.rect = foundRect;
+                if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
+                    const ctx = this.$refs.canvas.getContext('2d');
+                    if (previousHoveredRect) {
+                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight);
+                    }
+                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight);
+                    
+
+                    const frame = this.frameData.findFrameById(foundRect.id);
+                    this.hoveredAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(frame);
+                    this.hoveredAnnotationMaxSamples = frame.samples;
+                }
             } else {
+                this.hoveredAnnotationSamples = null;
+
                 // hovered over void, deselecting rect
                 this.hoveredFrame.rect = false;
+
+                if (previousHoveredRect) {
+                    const ctx = this.$refs.canvas.getContext('2d');
+                    this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight);
+                }
             }
         },
 
@@ -314,14 +393,112 @@ export default {
         fromCanvasCoords(mx, my) {
             return {
                 x : mx / (this.canvasWidth * this.zoomX) - this.offsetX,
-                y : this.canvasHeight - my
+                y : this.settings.inverted ? this.canvasHeight - my : my
             };
-        }
+        },
 
+        /**
+         * This function walks through all frames and annotates them based on matching annotation regex terms
+         */
+        annotateFrames() {
+            this.frameData.traverseFrames((frame, parentFrame) => {
+                // stores annotation samples per frame
+                frame.annotationSamples = {};
+
+                let matched = false;
+                for (let i = 0; i < this.annotations.length; i++) {
+                    const annotation = this.annotations[i];
+                    frame.annotationSamples[annotation.name] = 0;
+                    for (let j = 0; j < annotation.regexTerms.length; j++) {
+                        const regex = annotation.regexTerms[j];
+                        if (frame.name.match(regex)) {
+                            matched = true;
+                            frame.annotationSamples[annotation.name] = frame.samples;
+                        }
+                    }
+                };
+
+
+                const rect = this.frameData.findRectForFrame(frame);
+                if (rect) {
+                    rect.annotated = matched;
+                }
+            });
+
+            this.toggleAnnotationSamples();
+        },
+
+        toggleAnnotationSamples() {
+            let relativeFrame = this.frameData.rootFrame;
+            if (this.zoomedInRect) {
+                relativeFrame = this.frameData.findFrameById(this.zoomedInRect.id);
+            }
+            this.annotationMaxSamples = relativeFrame.samples;
+            this.annotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(relativeFrame);
+        },
+
+        calculateMaxAnotationSamplesRelativeToFrame(frame) {
+            const maxAnnotationSamples = {};
+            const childAnnotationSamplesSummary = {};
+            for (let i = 0; i < this.annotations.length; i++) {
+                childAnnotationSamplesSummary[this.annotations[i].name] = 0;
+            }
+
+            frame.childFrames.forEach(childFrame => {
+                const childMaxAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(childFrame);
+                for (let i = 0; i < this.annotations.length; i++) {
+                    childAnnotationSamplesSummary[this.annotations[i].name] += childMaxAnnotationSamples[this.annotations[i].name];
+                }
+            });
+
+            for (let i = 0; i < this.annotations.length; i++) {
+                const selfSample = frame.annotationSamples[this.annotations[i].name];
+                if (selfSample === 0) {
+                    maxAnnotationSamples[this.annotations[i].name] = childAnnotationSamplesSummary[this.annotations[i].name];
+                } else {
+                    maxAnnotationSamples[this.annotations[i].name] = selfSample;
+                }
+            };
+
+            return maxAnnotationSamples;
+        },
+
+        calculateUnmatchedSamples(annotationSamples, annotationMaxSamples) {
+            let unmatched = annotationMaxSamples;
+            for (let name in annotationSamples) {
+                if (annotationSamples.hasOwnProperty(name)) {
+                    unmatched -= annotationSamples[name];
+                }
+            }
+            return unmatched;
+        }
     },
     filters: {
         ratioToPrettyPercentage(value) {
             return `${Math.round(value * 10000) / 100}%`;
+        },
+
+        samplesToPercent(samples, total) {
+            if (total > 0) {
+                return `${Math.round(samples * 10000 / total) / 100}%`;
+            }
+            return '0%';
+        }
+    },
+
+    watch: {
+        annotations: {
+            deep: true,
+            handler() {
+                this.annotateFrames();
+                this.render();
+            }
+        },
+        settings: {
+            deep: true,
+            handler() {
+                this.render();
+            }
         }
     }
 }
