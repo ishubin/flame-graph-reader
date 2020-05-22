@@ -205,12 +205,12 @@ export default {
                 x2 = width;
             }
 
-            const saturation = rect.dimmed ? 0 : rect.color.s;
+            const saturation = rect.dimmed ? 30 : rect.color.s;
 
             const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 96 : rect.color.l;
 
             if (rect.annotated) {
-                ctx.fillStyle = `hsl(250, 50%, ${light}%, ${rectAlpha})`;
+                ctx.fillStyle = `hsl(250, ${saturation}%, ${light}%)`;
             } else {
                 ctx.fillStyle = `hsl(${rect.color.h}, ${saturation}%, ${light}%)`;
             }
@@ -334,12 +334,12 @@ export default {
                     name: 'Show Stack Trace',
                     id: 'show-stack-trace'
                 });
-                if (rect.parentId === 0) {
-                    this.contextMenu.options.push({
-                        name: 'Repair Frame',
-                        id: 'repair-frame'
-                    });
-                }
+                // if (rect.parentId === 0) {
+                //     this.contextMenu.options.push({
+                //         name: 'Repair Frame',
+                //         id: 'repair-frame'
+                //     });
+                // }
             }
 
             this.contextMenu.shown = true;
