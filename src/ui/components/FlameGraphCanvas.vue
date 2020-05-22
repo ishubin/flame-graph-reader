@@ -205,14 +205,14 @@ export default {
                 x2 = width;
             }
 
-            const rectAlpha = rect.dimmed ? 0.2 : 1.0;
+            const saturation = rect.dimmed ? 0 : rect.color.s;
 
             const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 96 : rect.color.l;
 
             if (rect.annotated) {
                 ctx.fillStyle = `hsl(250, 50%, ${light}%, ${rectAlpha})`;
             } else {
-                ctx.fillStyle = `hsl(${rect.color.h}, ${rect.color.s}%, ${light}%, ${rectAlpha})`;
+                ctx.fillStyle = `hsl(${rect.color.h}, ${saturation}%, ${light}%)`;
             }
 
             ctx.fillRect(x, y, Math.max(1, x2-x), this.frameHeight);
@@ -318,22 +318,28 @@ export default {
             this.contextMenu.x = mx;
             this.contextMenu.y = my;
             this.contextMenu.options = [{
-                name: "Zoom",
-                id: "zoom"
+                name: 'Zoom',
+                id: 'zoom'
             },{
-                name: "Zoom Out",
-                id: "zoom-out"
+                name: 'Zoom Out',
+                id: 'zoom-out'
             }];
 
             if (rect) {
                 this.contextMenu.options.push({
-                    name: "Zoom Into Frame",
-                    id: "zoom-into-frame"
+                    name: 'Zoom Into Frame',
+                    id: 'zoom-into-frame'
                 });
                 this.contextMenu.options.push({
-                    name: "Show Stack Trace",
-                    id: "show-stack-trace"
+                    name: 'Show Stack Trace',
+                    id: 'show-stack-trace'
                 });
+                if (rect.parentId === 0) {
+                    this.contextMenu.options.push({
+                        name: 'Repair Frame',
+                        id: 'repair-frame'
+                    });
+                }
             }
 
             this.contextMenu.shown = true;
@@ -348,6 +354,8 @@ export default {
                 this.zoomIntoRect(this.contextMenu.rect);
             } else if (option.id === 'show-stack-trace' && this.contextMenu.rect) {
                 this.shownStackTrace = this.frameData.collectStackTrace(this.contextMenu.rect.id);
+            } else if (option.id === 'repair-frame') {
+                this.repairFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
             }
 
             this.contextMenu.shown = false;
@@ -471,6 +479,25 @@ export default {
                 }
             }
             return unmatched;
+        },
+
+        repairFrame(frame) {
+            this.frameData.repairFrame(frame);
+            let maxDepth = 0;
+            for (let i = 0; i < this.frameData.rects.length; i++) {
+                const rect = this.frameData.rects[i];
+                const depth = (rect.d + 1);
+                if (depth > maxDepth) {
+                    maxDepth = depth;
+                }
+            }
+
+            this.grid = createGridFromRects(this.frameData.rects, maxDepth);
+            this.maxHeight = (maxDepth + 1) * this.frameHeight;
+
+            this.annotateFrames();
+            this.toggleAnnotationSamples();
+            this.render();
         }
     },
     filters: {

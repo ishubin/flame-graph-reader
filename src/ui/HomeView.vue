@@ -63,8 +63,9 @@ export default {
         this.loadReport('qwe', `
 com.example.Main.main;com.example.Main.test 1
 com.example.Main.main;com.example.Main.test;java.lang.String.format 2
-a;b;we;q 3
-a;b;c;v;d;d;af;f;as;s;a;a;s;f;a;a;f;a;asf;asf;asf;asf;asf;qwrwq;re;qwe;qwe;qwe;qwe;wqe;qwe;eq;wqe;w;ew;qwe;wqe;e;we;wew;eqwe;qwe;wqe;wqe;qwe;qwe;w;qe;a;d;as;da;ad;ad;asd;asda;sdas;da;dqwe;q;we;w;end 6
+a;c;b;we;q 3
+a;b;c;v;d;d;af;f;as;s;a;end 6
+c;v;d;d;af;zzzzzzzzzzzz 5
 something else 4
         `);
     },
@@ -74,10 +75,7 @@ something else 4
 
     data() {
         return {
-            annotations: [{
-                name: 'qwe',
-                regexTerms: ['com', 'asf']
-            }],
+            annotations: [],
             annotationsEditorShown: false,
 
             flameGraphs: [],

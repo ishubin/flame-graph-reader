@@ -176,6 +176,88 @@ class FrameData {
     traverseFramesStartingFrom(frame, callback) {
         this._traverseFrames(frame, null, callback);
     }
+
+    /**
+     * Tries to find the frame with the same name that is further away and merge the specified frame at that point
+     * @param {*} frameForRepair
+     */
+    repairFrame(frameForRepair) {
+        let depth = frameForRepair.depth;
+        let frameForMerge = frameForRepair;
+        this.traverseFrames(frame => {
+            if (frame.name === frameForRepair.name && depth < frame.depth) {
+                frameForMerge = frame;
+                depth = frame.depth;
+            }
+        });
+
+        if (frameForMerge.id !== frameForRepair.id) {
+            const parentFrame = this.findParentFrameForFrame(frameForRepair);
+            parentFrame.childFrames.delete(frameForRepair.name);
+            this.mergeFrames(frameForMerge, frameForRepair);
+
+            
+            // walking up the frames in order to update all ancestor samples
+            this.traverseAncestorFramesUntil(frameForMerge, 
+                frame => {frame.samples += frameForRepair.samples},
+                frame => frame.id !== parentFrame.id
+            );
+        }
+
+
+        enrichFrame(this.rootFrame);
+        const newFrameData = generateFrameData(this.rootFrame);
+        this.rootFrame = newFrameData.rootFrame;
+        this.rects     = newFrameData.rects;
+        this.framesMap = newFrameData.framesMap;
+        this.name      = newFrameData.nameLookup;
+    }
+
+    traverseAncestorFramesUntil(frame, callback, conditionCallback) {
+        const parentFrame = this.findParentFrameForFrame(frame);
+        if (!parentFrame) {
+            return;
+        }
+
+        if (conditionCallback(parentFrame)) {
+            callback(parentFrame);
+            this.traverseAncestorFramesUntil(parentFrame, callback, conditionCallback);
+        }
+    }
+
+    findParentFrameForFrame(frame) {
+        return this.findFrameById(frame.parentId);
+    }
+
+    /**
+     * Merges srcFrame into dstFrame
+     * @param {*} dstFrame 
+     * @param {*} srcFrame 
+     */
+    mergeFrames(dstFrame, srcFrame) {
+        dstFrame.samples += srcFrame.samples;
+        srcFrame.childFrames.forEach(childSrcFrame => {
+            if (dstFrame.childFrames.has(childSrcFrame.name)) {
+                this.mergeFrames(dstFrame.childFrames.get(childSrcFrame.name), childSrcFrame);
+            } else {
+                this.appendNewChildFrame(dstFrame, childSrcFrame);
+            }
+        });
+    }
+
+    appendNewChildFrame(frame, childFrame) {
+        const newChildFrame = {
+            name: childFrame.name,
+            samples: childFrame.samples,
+            childFrames: new Map(),
+            depth      : frame.depth + 1
+        };
+        frame.childFrames.set(childFrame.name, newChildFrame);
+
+        childFrame.childFrames.forEach(childChildFrame => {
+            this.appendNewChildFrame(newChildFrame, childChildFrame);
+        });
+    }
 }
 
 

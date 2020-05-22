@@ -13,6 +13,8 @@ export default {
     props: ['options', 'x', 'y'],
 
     mounted() {
+        document.body.addEventListener('click', this.onDocumentClick);
+
         const rect = this.$refs.contextMenuContainer.getBoundingClientRect();
         if (rect.bottom - window.innerHeight > -5) {
             this.realY = this.y - 3 - rect.height;
@@ -22,10 +24,22 @@ export default {
         }
     },
 
+    beforeDestroy() {
+        document.body.removeEventListener('click', this.onDocumentClick);
+    },
+
     data() {
         return {
             realX: this.x + 3, realY: this.y + 3
         };
+    },
+
+    methods: {
+        onDocumentClick() {
+            setTimeout(() => {
+                this.$emit('close');
+            }, 100);
+        }
     }
     
 }

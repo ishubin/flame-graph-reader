@@ -183,20 +183,25 @@ code.stacktrace {
 }
 
 
-/* table.table {
-    width: 100%;
-} */
+table.table {
+    border-collapse: collapse;
+}
 table.table thead th {
     text-align: left;
     font-size: 14px;
     font-weight: bold;
+    background: #ddd;
 }
 table.table tbody td.label {
     font-size: 14px;
     font-weight: bold;
 }
-table.table tobdy td {
+table.table tbody td {
     font-size: 14px;
+}
+table.table tbody td, table.table thead th {
+    border: 1px solid #ccc;
+    padding: 2px 5px;
 }
 
 code.oneliner {
