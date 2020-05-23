@@ -332,6 +332,40 @@ class FrameData {
             this.appendNewChildFrame(newChildFrame, childChildFrame);
         });
     }
+
+    compareWith(otherRootFrame) {
+        this._compareWith(this.rootFrame, otherRootFrame, this.rootFrame.samples, otherRootFrame.samples);
+    }
+
+    _compareWith(frame, otherFrame, totalSamples, otherTotalSamples) {
+        if (otherFrame) {
+            const ratio = frame.samples / totalSamples;
+            frame.otherRatio = otherFrame.samples / otherTotalSamples;
+            frame.diffRatio = (frame.otherRatio - ratio) / ratio;
+        } else {
+            frame.diffRatio = -1.0;
+            frame.otherRatio = 0.0;
+        }
+
+        const rect = this.findRectForFrame(frame);
+        if (rect) {
+            let delta = Math.max(-1, Math.min(frame.diffRatio, 1));
+            let hue = 0;
+            if (delta > 0) {
+                hue = 60 * (1 - delta) + 120 * delta;
+            } else {
+                hue = 60 * (1 + delta);
+            }
+
+            rect.color = {h: hue, s: 90, l: 50};
+        }
+
+        frame.childFrames.forEach((childFrame, childFrameName) => {
+            const otherChild = otherFrame ? otherFrame.childFrames.get(childFrameName) : null;
+
+            this._compareWith(childFrame, otherChild, totalSamples, otherTotalSamples);
+        });
+    }
 }
 
 

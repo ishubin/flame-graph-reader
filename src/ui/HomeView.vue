@@ -18,6 +18,7 @@
                 <input type="checkbox" name="compacted" id="chk-compact" v-model="settings.compact"> <label for="chk-compact">Compact</label>
                 <input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> <label for="chk-inverted">Inverted</label>
                 <span class="link" @click="annotationsEditorShown = true">Annotations</span>
+                <span class="link" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="link" @click="repairBrokenFrames">Repair Broken Frames</span>
             </div>
         </div>
@@ -28,11 +29,19 @@
                 :frame-data="flameGraph.frameData"
                 :annotations="annotations"
                 :settings="settings"
+                :compared-graph-name="flameGraph.comparedWith"
                 />
         </div>
 
 
         <annotations-editor v-if="annotationsEditorShown" :annotations="annotations" @close="annotationsEditorShown = false"/>
+
+
+        <modal title="Compare Flame Graphs" @close="compareGraphsModal.shown = false" v-if="compareGraphsModal.shown" :width="400">
+            <div v-for="(flameGraph, flameGraphIndex) in flameGraphs" v-if="flameGraphIndex !== activeReportIndex">
+                <span class="link" @click="compareFlameGraphs(flameGraphIndex)">{{flameGraph.name}}</span>
+            </div>
+        </modal>
 
 
         <transition name="modal" v-if="isLoadingFlameGraph">
@@ -56,11 +65,12 @@
 <script>
 import {parseProfilingLog, generateFrameData} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
+import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
 
 
 export default {
-    components: {FlameGraphCanvas, AnnotationsEditor},
+    components: {FlameGraphCanvas, AnnotationsEditor, Modal},
 
     mounted() {
         this.loadReport('qwe', `
@@ -88,6 +98,9 @@ something else 4
             settings: {
                 inverted: false,
                 compact: false
+            },
+            compareGraphsModal: {
+                shown: false
             }
         };
     },
@@ -118,7 +131,8 @@ something else 4
                 this.flameGraphs.push({
                     name: name,
                     id: this.reportCounter,
-                    frameData
+                    frameData,
+                    comparedWith: null
                 });
                 this.activeReportIndex = this.flameGraphs.length - 1;
                 this.isLoadingFlameGraph = false;
@@ -143,13 +157,32 @@ something else 4
                 this.reportCounter += 1;
 
                 this.flameGraphs.push({
-                    name     : oldFlameGraph.name + ' (repaired)',
-                    id       : this.reportCounter,
-                    frameData: newFrameData
+                    name        : oldFlameGraph.name + ' (repaired)',
+                    id          : this.reportCounter,
+                    frameData   : newFrameData,
+                    comparedWith: null
                 });
 
                 this.activeReportIndex = this.flameGraphs.length - 1;
             }
+        },
+
+        compareFlameGraphs(idx) {
+            this.compareGraphsModal.shown = false;
+
+            const newFrameData = this.flameGraphs[this.activeReportIndex].frameData.clone();
+            newFrameData.compareWith(this.flameGraphs[idx].frameData.rootFrame);
+
+            this.reportCounter += 1;
+
+            this.flameGraphs.push({
+                name        : this.flameGraphs[this.activeReportIndex].name + ' vs ' + this.flameGraphs[idx].name,
+                id          : this.reportCounter,
+                frameData   : newFrameData,
+                comparedWith: this.flameGraphs[idx].name
+            });
+
+            this.activeReportIndex = this.flameGraphs.length - 1;
         }
     },
 }

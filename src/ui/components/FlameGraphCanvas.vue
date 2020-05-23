@@ -18,6 +18,7 @@
                                     <thead>
                                         <tr>
                                             <th width="70px">%</th>
+                                            <th v-if="comparedGraphName" width="70px">% in {{comparedGraphName}}</th>
                                             <th width="100px">Samples</th>
                                             <th>Frame</th>
                                         </tr>
@@ -25,6 +26,7 @@
                                     <tbody>
                                         <tr>
                                             <td>{{hoveredFrame.rect.w | ratioToPrettyPercentage}}</td>
+                                            <td v-if="comparedGraphName">{{hoveredFrame.frame.otherRatio | ratioToPrettyPercentage}}</td>
                                             <td>{{hoveredFrame.rect.samples}}</td>
                                             <td>
                                                 <code class="oneliner">{{hoveredFrame.rect.name}}</code>
@@ -93,7 +95,7 @@ export default {
 
     components: {Modal, ContextMenu},
 
-    props: ['frameData', 'annotations', 'settings'],
+    props: ['frameData', 'annotations', 'settings', 'comparedGraphName'],
 
     data() {
         return {
@@ -109,7 +111,8 @@ export default {
             canvasHeight: 100,
 
             hoveredFrame: {
-                rect: null
+                rect: null,
+                frame: null
             },
 
             zoomedInRect: null,
@@ -200,7 +203,7 @@ export default {
 
             const saturation = rect.dimmed ? 30 : rect.color.s;
 
-            const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 96 : rect.color.l;
+            const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 85 : rect.color.l;
 
             if (rect.annotated) {
                 ctx.fillStyle = `hsl(250, ${saturation}%, ${light}%)`;
@@ -361,10 +364,12 @@ export default {
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
             const foundRect = this.findRectAtPoint(x, y);
-            const previousHoveredRect = this.hoveredFrame.rect;
 
             if (foundRect) {
+                const previousHoveredRect = this.hoveredFrame.rect;
                 this.hoveredFrame.rect = foundRect;
+                const frame = this.frameData.findFrameById(foundRect.id);
+                this.hoveredFrame.frame = frame;
                 if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
                     const ctx = this.$refs.canvas.getContext('2d');
                     if (previousHoveredRect) {
@@ -373,19 +378,19 @@ export default {
                     this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     
 
-                    const frame = this.frameData.findFrameById(foundRect.id);
                     this.hoveredAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(frame);
                     this.hoveredAnnotationMaxSamples = frame.samples;
                 }
             } else {
                 this.hoveredAnnotationSamples = null;
 
-                // hovered over void, deselecting rect
-                this.hoveredFrame.rect = false;
-
-                if (previousHoveredRect) {
+                if (this.hoveredFrame.rect) {
+                    const previousHoveredRect = this.hoveredFrame.rect;
+                    // hovered over void, deselecting rect
+                    this.hoveredFrame.rect = null;
+                    this.hoveredFrame.frame = null;
                     const ctx = this.$refs.canvas.getContext('2d');
-                    this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight);
+                    this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                 }
             }
         },

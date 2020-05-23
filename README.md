@@ -6,11 +6,13 @@ h3. Features
 - [x] Zoom by mouse (drawing rect on the screen to which it should zoom horizontally)
 - [x] Search
 - [x] Annotate. Use tags that could combine multiple frames (e.g. 'networking', 'mysql', 'cache-lookup' etc.). Allow custom tags + multiple regex search terms per tag
-- [ ] Compare two flame graphs (show in tabs + diff view)
-- [ ] Various color themes
+- [x] Compare two flame graphs (show in tabs + diff view)
 - [x] Invert stack traces
-- [ ] Rename flame graph tab
 - [x] Repair stacks (sort of works)
-- [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request
-- [ ] By frame overview table mode.
 - [x] Render in compact form
+- [ ] Annotations quick on/off checkboxes in bottom panel
+- [ ] Save annotations in local storage
+- [ ] By frame overview table mode.
+- [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request
+- [ ] Various color themes
+- [ ] Rename flame graph tab

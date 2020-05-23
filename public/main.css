@@ -185,6 +185,7 @@ ul.tabs .tab.tab-add-new input[type='file'] {
 
 .flame-graph-details-panel {
     position: fixed;
+    font-size: 9pt;
     display: block;
     overflow: scroll;
     padding: 5px;
@@ -211,16 +212,12 @@ table.table {
 }
 table.table thead th {
     text-align: left;
-    font-size: 14px;
     font-weight: bold;
     background: #ddd;
+    white-space: nowrap;
 }
 table.table tbody td.label {
-    font-size: 14px;
     font-weight: bold;
-}
-table.table tbody td {
-    font-size: 14px;
 }
 table.table tbody td, table.table thead th {
     border: 1px solid #ccc;
