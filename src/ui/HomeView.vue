@@ -15,11 +15,11 @@
             </ul>
 
             <div class="right-tool-bar">
-                <input type="checkbox" name="compacted" id="chk-compact" v-model="settings.compact"> <label for="chk-compact">Compact</label>
-                <input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> <label for="chk-inverted">Inverted</label>
-                <span class="link" @click="annotationsEditorShown = true">Annotations</span>
-                <span class="link" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
-                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="link" @click="repairBrokenFrames">Repair Broken Frames</span>
+                <span class="btn btn-primary" @click="settings.compact = !settings.compact"><input type="checkbox" name="compacted" id="chk-compact" v-model="settings.compact"> Compact</span>
+                <span class="btn btn-primary" @click="settings.inverted = !settings.inverted"><input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> Inverted</span>
+                <span class="btn btn-primary" @click="annotationsEditorShown = true">Annotations</span>
+                <span class="btn btn-primary" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
+                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFrames">Repair Broken Frames</span>
             </div>
         </div>
         <div class="flame-graphs">
