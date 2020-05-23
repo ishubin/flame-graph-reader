@@ -96,14 +96,12 @@ export default {
     props: ['frameData', 'annotations', 'settings'],
 
     data() {
-        const frameHeight = 20;
-
         return {
-            grid:           createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth),
-            frameHeight,
-            offsetX     : 0.0,
-            zoomX       : 1.0,
-            maxHeight   : (this.frameData.rootFrame.maxDepth + 1) * frameHeight,
+            grid              : createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth),
+            normalFrameHeight : 20,
+            compactFrameHeight: 5,
+            offsetX           : 0.0,
+            zoomX             : 1.0,
 
             backgroundColor: 'hsl(205, 27%, 23%)',
 
@@ -141,12 +139,17 @@ export default {
     },
 
     methods: {
+        getFrameHeight() {
+            return this.settings.compact ? this.compactFrameHeight : this.normalFrameHeight;
+        },
+
         render() {
+            const frameHeight = this.getFrameHeight(); 
             const canvas = this.$refs.canvas;
             const ctx = canvas.getContext('2d');
 
             const width = window.innerWidth;
-            const height = this.maxHeight;
+            const height = (this.frameData.rootFrame.maxDepth + 1) * frameHeight;
 
             this.canvasWidth = width;
             this.canvasHeight = height;
@@ -161,7 +164,6 @@ export default {
                 ctx.scale(2, 2);
             }
 
-
             ctx.fillStyle = this.backgroundColor;
             ctx.rect(0, 0, width, height);
             ctx.fill();
@@ -171,14 +173,14 @@ export default {
 
 
             for (let i = 0; i < this.frameData.rects.length; i++) {
-                this.drawFrameRect(ctx, this.frameData.rects[i], width, height);
+                this.drawFrameRect(ctx, this.frameData.rects[i], width, height, frameHeight);
             }
         },
 
-        drawFrameRect(ctx, rect, width, height) {
-            let y = Math.floor(rect.d * this.frameHeight);
+        drawFrameRect(ctx, rect, width, height, frameHeight) {
+            let y = Math.floor(rect.d * frameHeight);
             if (this.settings.inverted) {
-                y = Math.floor(height - (rect.d + 1) * this.frameHeight);
+                y = Math.floor(height - (rect.d + 1) * frameHeight);
             }
             if (y < 0 || y > height) {
                 return;
@@ -206,18 +208,20 @@ export default {
                 ctx.fillStyle = `hsl(${rect.color.h}, ${saturation}%, ${light}%)`;
             }
 
-            ctx.fillRect(x, y, Math.max(1, x2-x), this.frameHeight);
+            ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
 
 
-            let w = x2 - x;
-            let name = rect.name;
-            if (w > 50 && name.length > 0) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
-                const maxSymbols = parseInt(Math.floor(w / 10));
-                if (maxSymbols < name.length) {
-                    name = name.substring(0, maxSymbols) + '...';
+            if (!this.settings.compact) {
+                let w = x2 - x;
+                let name = rect.name;
+                if (w > 50 && name.length > 0) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
+                    const maxSymbols = parseInt(Math.floor(w / 10));
+                    if (maxSymbols < name.length) {
+                        name = name.substring(0, maxSymbols) + '...';
+                    }
+                    ctx.fillText(name, x + 4, y + 14, w);
                 }
-                ctx.fillText(name, x + 4, y + 14, w);
             }
         },
 
@@ -281,9 +285,10 @@ export default {
 
         findRectAtPoint(x, y) {
             let foundRect = null;
-            this.grid.lookupAtPoint(x, Math.floor(y/this.frameHeight), rect => {
-                const ry1 = rect.d * this.frameHeight;
-                const ry2 = (rect.d + 1) * this.frameHeight;
+            const frameHeight = this.getFrameHeight();
+            this.grid.lookupAtPoint(x, Math.floor(y/frameHeight), rect => {
+                const ry1 = rect.d * frameHeight;
+                const ry2 = (rect.d + 1) * frameHeight;
 
                 if (rect.x <= x && x <= rect.x + rect.w && ry1 <= y && y <= ry2) {
                     foundRect = rect;
@@ -363,9 +368,9 @@ export default {
                 if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
                     const ctx = this.$refs.canvas.getContext('2d');
                     if (previousHoveredRect) {
-                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight);
+                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     }
-                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight);
+                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     
 
                     const frame = this.frameData.findFrameById(foundRect.id);
@@ -483,7 +488,6 @@ export default {
         repairFrame(frame) {
             this.frameData.repairFrame(frame);
             this.grid = createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth);
-            this.maxHeight = (this.frameData.rootFrame.maxDepth + 1) * this.frameHeight;
 
             this.hoveredFrame.rect = null;
             this.annotateFrames();

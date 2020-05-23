@@ -13,4 +13,4 @@ h3. Features
 - [x] Repair stacks (sort of works)
 - [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request
 - [ ] By frame overview table mode.
-- [ ] Render in compact form
+- [x] Render in compact form

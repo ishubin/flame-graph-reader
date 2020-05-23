@@ -15,6 +15,7 @@
             </ul>
 
             <div class="right-tool-bar">
+                <input type="checkbox" name="compacted" id="chk-compact" v-model="settings.compact"> <label for="chk-compact">Compact</label>
                 <input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> <label for="chk-inverted">Inverted</label>
                 <span class="link" @click="annotationsEditorShown = true">Annotations</span>
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="link" @click="repairBrokenFrames">Repair Broken Frames</span>
@@ -85,7 +86,8 @@ something else 4
             activeReportIndex: 0 ,
             isLoadingFlameGraph: false,
             settings: {
-                inverted: false
+                inverted: false,
+                compact: false
             }
         };
     },
