@@ -10,7 +10,7 @@ h3. Features
 - [x] Invert stack traces
 - [x] Repair stacks (sort of works)
 - [x] Render in compact form
-- [ ] Annotations quick on/off checkboxes in bottom panel
+- [x] Annotations quick on/off checkboxes in bottom panel
 - [ ] Save annotations in local storage
 - [ ] By frame overview table mode.
 - [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request

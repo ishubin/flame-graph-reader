@@ -41,13 +41,15 @@
                                 <thead>
                                     <tr>
                                         <th>Unmatched</th>
-                                        <th v-for="(samples, name) in hoveredAnnotationSamples">{{name}}</th>
+                                        <th v-for="annotation in annotations"><input type="checkbox" v-model="annotation.enabled"> {{annotation.name}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>{{calculateUnmatchedSamples(hoveredAnnotationSamples, hoveredAnnotationMaxSamples) | samplesToPercent(hoveredAnnotationMaxSamples)}}</td>
-                                        <td v-for="(samples, name) in hoveredAnnotationSamples">{{samples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
+                                        <td v-for="annotation in annotations">
+                                            <span v-if="annotation.enabled">{{hoveredAnnotationSamples[annotation.name] | samplesToPercent(hoveredAnnotationMaxSamples) }}</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -55,13 +57,15 @@
                                 <thead>
                                     <tr>
                                         <th>Unmatched</th>
-                                        <th v-for="(samples, name) in annotationSamples">{{name}}</th>
+                                        <th v-for="annotation in annotations"><input type="checkbox" v-model="annotation.enabled"> {{annotation.name}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>{{calculateUnmatchedSamples(annotationSamples, annotationMaxSamples) | samplesToPercent(annotationMaxSamples)}}</td>
-                                        <td v-for="(samples, name) in annotationSamples">{{samples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td v-for="annotation in annotations">
+                                            <span v-if="annotation.enabled">{{annotationSamples[annotation.name] | samplesToPercent(annotationMaxSamples) }}</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -452,9 +456,8 @@ export default {
             const maxAnnotationSamples = {};
             const childAnnotationSamplesSummary = {};
             for (let i = 0; i < this.annotations.length; i++) {
-                if (this.annotations[i].enabled) {
-                    childAnnotationSamplesSummary[this.annotations[i].name] = 0;
-                }
+                childAnnotationSamplesSummary[this.annotations[i].name] = 0;
+                maxAnnotationSamples[this.annotations[i].name] = 0;
             }
 
             frame.childFrames.forEach(childFrame => {
