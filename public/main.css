@@ -97,23 +97,32 @@ ul.tabs li {
 }
 ul.tabs .tab {
     position: relative;
-    background: rgb(198, 200, 201);
     display: inline-block;
+    margin: 0;
+    font-weight: bold;
+    height: 30px;
+}
+ul.tabs .tab .tab-name {
+    background: rgb(198, 200, 201);
     cursor: pointer;
     padding: 5px 25px;
-    font-weight: bold;
-    height: 25px;
-    margin: 0;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
 }
-ul.tabs .tab.active {
+ul.tabs .tab.active .tab-name {
     background: rgb(10, 77, 104);
     color: white;
 }
 ul.tabs .tab .tab-close {
     display: none;
     position: absolute;
+    cursor: pointer;
     left: 5px;
-    top: 4px;
+    top: 0px;
+}
+ul.tabs .tab.active .tab-close {
+    color: white;
 }
 ul.tabs .tab:hover .tab-close {
     display: inline-block;
@@ -121,12 +130,26 @@ ul.tabs .tab:hover .tab-close {
 
 ul.tabs .tab.tab-add-new {
     position: relative;
-    width: 20px;
-    height: 25px;
-    padding: 5px 5px;
     margin: 0;
-    overflow: hidden;
+    width: 20px;
+    height: 30px;
 }
+ul.tabs .tab.tab-add-new > div {
+    position: absolute;
+    top: 9px;
+    left: 0;
+    width: 20px;
+    height: 30px;
+    overflow: hidden;
+    background: #bbb;
+}
+ul.tabs .tab.tab-add-new > div:hover {
+    background: #333;
+}
+ul.tabs .tab.tab-add-new > div:hover span {
+    color: white;
+}
+
 ul.tabs .tab.tab-add-new input[type='file'] {
     display: block;
     position: absolute;

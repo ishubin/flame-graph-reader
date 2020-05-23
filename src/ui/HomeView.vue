@@ -2,13 +2,15 @@
     <div class="main-view">
         <div class="header">
             <ul class="tabs">
-                <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}" @click="activeReportIndex = flameGraphIndex" v-for="(flameGraph, flameGraphIndex) in flameGraphs">
+                <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}"  v-for="(flameGraph, flameGraphIndex) in flameGraphs">
                     <span class="tab-close" @click="closeFlameGraph(flameGraphIndex)">&#x2716;</span>
-                    <span>{{flameGraph.name}}</span>
+                    <span class="tab-name" @click="activeReportIndex = flameGraphIndex">{{flameGraph.name}}</span>
                 </li>
                 <li class="tab tab-add-new">
-                    <span>&#x2795;</span>
-                    <input type="file" @change="onFileChange"/> 
+                    <div>
+                        <span>&#x2795;</span>
+                        <input type="file" @change="onFileChange"/> 
+                    </div>
                 </li>
             </ul>
 
