@@ -96,23 +96,14 @@ export default {
     props: ['frameData', 'annotations', 'settings'],
 
     data() {
-        let maxDepth = 0;
-        for (let i = 0; i < this.frameData.rects.length; i++) {
-            const rect = this.frameData.rects[i];
-            const depth = (rect.d + 1);
-            if (depth > maxDepth) {
-                maxDepth = depth;
-            }
-        }
-
         const frameHeight = 20;
 
         return {
-            grid:           createGridFromRects(this.frameData.rects, maxDepth),
+            grid:           createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth),
             frameHeight,
             offsetX     : 0.0,
             zoomX       : 1.0,
-            maxHeight   : (maxDepth + 1) * frameHeight,
+            maxHeight   : (this.frameData.rootFrame.maxDepth + 1) * frameHeight,
 
             backgroundColor: 'hsl(205, 27%, 23%)',
 
@@ -491,17 +482,8 @@ export default {
 
         repairFrame(frame) {
             this.frameData.repairFrame(frame);
-            let maxDepth = 0;
-            for (let i = 0; i < this.frameData.rects.length; i++) {
-                const rect = this.frameData.rects[i];
-                const depth = (rect.d + 1);
-                if (depth > maxDepth) {
-                    maxDepth = depth;
-                }
-            }
-
-            this.grid = createGridFromRects(this.frameData.rects, maxDepth);
-            this.maxHeight = (maxDepth + 1) * this.frameHeight;
+            this.grid = createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth);
+            this.maxHeight = (this.frameData.rootFrame.maxDepth + 1) * this.frameHeight;
 
             this.hoveredFrame.rect = null;
             this.annotateFrames();

@@ -14,8 +14,8 @@
 
             <div class="right-tool-bar">
                 <input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> <label for="chk-inverted">Inverted</label>
-
                 <span class="link" @click="annotationsEditorShown = true">Annotations</span>
+                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="link" @click="repairBrokenFrames">Repair Broken Frames</span>
             </div>
         </div>
         <div class="flame-graphs">
@@ -129,6 +129,24 @@ something else 4
                 this.flameGraphs.splice(index, 1);
             }
         },
+
+        repairBrokenFrames() {
+            if (this.activeReportIndex >= 0 && this.activeReportIndex < this.flameGraphs.length) {
+                const oldFlameGraph = this.flameGraphs[this.activeReportIndex];
+                const newFrameData = this.flameGraphs[this.activeReportIndex].frameData.clone();
+                newFrameData.repairBrokenFrames();
+
+                this.reportCounter += 1;
+
+                this.flameGraphs.push({
+                    name     : oldFlameGraph.name + ' (repaired)',
+                    id       : this.reportCounter,
+                    frameData: newFrameData
+                });
+
+                this.activeReportIndex = this.flameGraphs.length - 1;
+            }
+        }
     },
 }
 </script>

@@ -72,10 +72,17 @@ function enrichFrame(currentFrame, idGenerator, parentId) {
     if (!currentFrame.childFrames) {
         return;
     }
+    let maxDepth = currentFrame.depth;
     currentFrame.childFrames.forEach(childFrame => {
         currentFrame.selfSamples -= childFrame.samples;
-        enrichFrame(childFrame, idGenerator, currentFrame.id);
+        const maxDepthInChild = enrichFrame(childFrame, idGenerator, currentFrame.id);
+        if (maxDepth < maxDepthInChild) {
+            maxDepth = maxDepthInChild;
+        }
     });
+    
+    currentFrame.maxDepth = maxDepth;
+    return maxDepth;
 }
 
 function visitFrames(currentFrame, callback, parentFrame) {
@@ -110,12 +117,43 @@ function color(name) {
 }
 
 
+function copyChildFrames(srcFrame, dstFrame) {
+    srcFrame.childFrames.forEach((childFrame, childFrameName) => {
+        const dstChild = {
+            name       : childFrame.name,
+            childFrames: new Map(),
+            samples    : childFrame.samples,
+            selfSamples: childFrame.selfSamples,
+            depth      : childFrame.depth
+        };
+        dstFrame.childFrames.set(childFrameName, dstChild);
+
+        copyChildFrames(childFrame, dstChild);
+    });
+}
+
+
 class FrameData {
     constructor(rootFrame, rects, framesMap, nameLookup) {
         this.rootFrame = rootFrame;
         this.rects     = rects;
         this.framesMap = framesMap;
         this.name      = nameLookup;
+    }
+
+    clone() {
+        const newRoot = {
+            name       : this.rootFrame.name,
+            childFrames: new Map(),
+            samples    : this.rootFrame.samples,
+            selfSamples: this.rootFrame.selfSamples,
+            depth      : this.rootFrame.depth
+        };
+
+        copyChildFrames(this.rootFrame, newRoot);
+        enrichFrame(newRoot);
+
+        return generateFrameData(newRoot);
     }
 
     collectStackTrace(stackId) {
@@ -177,21 +215,38 @@ class FrameData {
         this._traverseFrames(frame, null, callback);
     }
 
+
+    /**
+     * Tries to find all frames of the same length with the largest depth.
+     * It assumes that during collection of stack-traces their depth was limited,
+     * so in the resulting report they would all end up with the same max depth.
+     * Once it finds those frames it will trie to repair frame by frame
+     */
+    repairBrokenFrames() {
+        const brokenFrameNames = [];
+        let maxBrokenDepth = 0;
+
+        this.rootFrame.childFrames.forEach((frame, frameName) => {
+            if (maxBrokenDepth < frame.maxDepth) {
+                maxBrokenDepth = frame.maxDepth;
+                brokenFrameNames.length = 0;
+                brokenFrameNames.push(frameName);
+            } else if (maxBrokenDepth === frame.maxDepth) {
+                brokenFrameNames.push(frameName);
+            }
+        });
+
+        for(let i = 0; i < brokenFrameNames.length; i++) {
+            const frame = this.rootFrame.childFrames.get(brokenFrameNames[i]);
+            this.repairFrame(frame);
+        }
+    }
+
     /**
      * Tries to find the frame with the same name that is further away and merge the specified frame at that point
      * @param {*} frameForRepair
      */
     repairFrame(frameForRepair) {
-        // let depth = frameForRepair.depth;
-        // let frameForMerge = frameForRepair;
-        // TODO bredth first search and exclude checking in the frameForRepair
-        // this.traverseFrames(frame => {
-        //     if (frame.name === frameForRepair.name && depth < frame.depth && depth === frameForRepair.depth) {
-        //         frameForMerge = frame;
-        //         depth = frame.depth;
-        //     }
-        // });
-
         // doing bredth search first, since we are trying to find a frame that is a bit further away.
         const queue = [this.rootFrame];
         let frameForMerge = null;
@@ -211,13 +266,11 @@ class FrameData {
             return;
         }
 
-
         if (frameForMerge.id !== frameForRepair.id) {
             const parentFrame = this.findParentFrameForFrame(frameForRepair);
             parentFrame.childFrames.delete(frameForRepair.name);
             this.mergeFrames(frameForMerge, frameForRepair);
 
-            
             // walking up the frames in order to update all ancestor samples
             this.traverseAncestorFramesUntil(frameForMerge, 
                 frame => {frame.samples += frameForRepair.samples},
@@ -225,8 +278,8 @@ class FrameData {
             );
         }
 
-
         enrichFrame(this.rootFrame);
+
         const newFrameData = generateFrameData(this.rootFrame);
         this.rootFrame = newFrameData.rootFrame;
         this.rects     = newFrameData.rects;
