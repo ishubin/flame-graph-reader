@@ -9,12 +9,14 @@
             <table class="table annotations-table">
                 <thead>
                     <th width="20px"></th>
+                    <th width="20px">On</th>
                     <th width="200px">Name</th>
                     <th>Regex</th>
                 </thead>
                 <tbody>
                     <tr v-for="(annotation, annotationIndex) in annotations">
                         <td><span class="close-link" @click="removeAnnotation(annotationIndex)">&#x2716;</span></td>
+                        <td><input type="checkbox" v-model="annotation.enabled"></td>
                         <td>
                             {{annotation.name}}
                         </td>
@@ -65,7 +67,8 @@ export default {
                 } else {
                     this.annotations.push({
                         name: this.newAnnotation.name,
-                        regexTerms: [this.newAnnotation.regex]
+                        regexTerms: [this.newAnnotation.regex],
+                        enabled: true
                     });
                 }
                 this.newAnnotation.name = '';   

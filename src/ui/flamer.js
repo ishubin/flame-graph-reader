@@ -182,14 +182,35 @@ class FrameData {
      * @param {*} frameForRepair
      */
     repairFrame(frameForRepair) {
-        let depth = frameForRepair.depth;
-        let frameForMerge = frameForRepair;
-        this.traverseFrames(frame => {
-            if (frame.name === frameForRepair.name && depth < frame.depth) {
+        // let depth = frameForRepair.depth;
+        // let frameForMerge = frameForRepair;
+        // TODO bredth first search and exclude checking in the frameForRepair
+        // this.traverseFrames(frame => {
+        //     if (frame.name === frameForRepair.name && depth < frame.depth && depth === frameForRepair.depth) {
+        //         frameForMerge = frame;
+        //         depth = frame.depth;
+        //     }
+        // });
+
+        // doing bredth search first, since we are trying to find a frame that is a bit further away.
+        const queue = [this.rootFrame];
+        let frameForMerge = null;
+        while(queue.length > 0 && !frameForMerge) {
+            const frame = queue.shift();
+            frame.childFrames.forEach(childFrame => {
+                if (childFrame.id !== frameForRepair.id) {
+                    queue.push(childFrame);
+                }
+            });
+            if (frame.name === frameForRepair.name && frame.id !== frameForRepair.id && frame.depth > frameForRepair.depth) {
                 frameForMerge = frame;
-                depth = frame.depth;
             }
-        });
+        }
+
+        if (!frameForMerge) {
+            return;
+        }
+
 
         if (frameForMerge.id !== frameForRepair.id) {
             const parentFrame = this.findParentFrameForFrame(frameForRepair);

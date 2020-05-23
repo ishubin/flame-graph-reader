@@ -334,12 +334,12 @@ export default {
                     name: 'Show Stack Trace',
                     id: 'show-stack-trace'
                 });
-                // if (rect.parentId === 0) {
-                //     this.contextMenu.options.push({
-                //         name: 'Repair Frame',
-                //         id: 'repair-frame'
-                //     });
-                // }
+                if (rect.parentId === 0) {
+                    this.contextMenu.options.push({
+                        name: 'Repair Frame',
+                        id: 'repair-frame'
+                    });
+                }
             }
 
             this.contextMenu.shown = true;
@@ -416,12 +416,14 @@ export default {
                 let matched = false;
                 for (let i = 0; i < this.annotations.length; i++) {
                     const annotation = this.annotations[i];
-                    frame.annotationSamples[annotation.name] = 0;
-                    for (let j = 0; j < annotation.regexTerms.length; j++) {
-                        const regex = annotation.regexTerms[j];
-                        if (frame.name.match(regex)) {
-                            matched = true;
-                            frame.annotationSamples[annotation.name] = frame.samples;
+                    if (annotation.enabled) {
+                        frame.annotationSamples[annotation.name] = 0;
+                        for (let j = 0; j < annotation.regexTerms.length; j++) {
+                            const regex = annotation.regexTerms[j];
+                            if (frame.name.match(regex)) {
+                                matched = true;
+                                frame.annotationSamples[annotation.name] = frame.samples;
+                            }
                         }
                     }
                 };
@@ -449,22 +451,28 @@ export default {
             const maxAnnotationSamples = {};
             const childAnnotationSamplesSummary = {};
             for (let i = 0; i < this.annotations.length; i++) {
-                childAnnotationSamplesSummary[this.annotations[i].name] = 0;
+                if (this.annotations[i].enabled) {
+                    childAnnotationSamplesSummary[this.annotations[i].name] = 0;
+                }
             }
 
             frame.childFrames.forEach(childFrame => {
                 const childMaxAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(childFrame);
                 for (let i = 0; i < this.annotations.length; i++) {
-                    childAnnotationSamplesSummary[this.annotations[i].name] += childMaxAnnotationSamples[this.annotations[i].name];
+                    if (this.annotations[i].enabled) {
+                        childAnnotationSamplesSummary[this.annotations[i].name] += childMaxAnnotationSamples[this.annotations[i].name];
+                    }
                 }
             });
 
             for (let i = 0; i < this.annotations.length; i++) {
-                const selfSample = frame.annotationSamples[this.annotations[i].name];
-                if (selfSample === 0) {
-                    maxAnnotationSamples[this.annotations[i].name] = childAnnotationSamplesSummary[this.annotations[i].name];
-                } else {
-                    maxAnnotationSamples[this.annotations[i].name] = selfSample;
+                if (this.annotations[i].enabled) {
+                    const selfSample = frame.annotationSamples[this.annotations[i].name];
+                    if (selfSample === 0) {
+                        maxAnnotationSamples[this.annotations[i].name] = childAnnotationSamplesSummary[this.annotations[i].name];
+                    } else {
+                        maxAnnotationSamples[this.annotations[i].name] = selfSample;
+                    }
                 }
             };
 
@@ -495,6 +503,7 @@ export default {
             this.grid = createGridFromRects(this.frameData.rects, maxDepth);
             this.maxHeight = (maxDepth + 1) * this.frameHeight;
 
+            this.hoveredFrame.rect = null;
             this.annotateFrames();
             this.toggleAnnotationSamples();
             this.render();
