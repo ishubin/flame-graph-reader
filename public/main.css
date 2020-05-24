@@ -347,3 +347,24 @@ textarea.annotation-json {
     width: 99%;
     height: 400px;
 }
+
+
+
+.frame-table-overview {
+    padding: 10px;
+}
+.frame-table-overview input.search {
+    width: calc(100% - 20px);
+}
+.frame-table-overview table {
+    width: calc(100% - 20px);
+    margin-top: 10px;
+    font-size: 9pt;
+    font-family: 'Courier New', Courier, monospace;
+}
+.frame-table-overview table thead th {
+    cursor: pointer;
+}
+.frame-table-overview table thead th:hover {
+    text-decoration: underline;
+}

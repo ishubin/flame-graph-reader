@@ -15,6 +15,9 @@
             </ul>
 
             <div class="right-tool-bar">
+                <span class="btn btn-primary" v-if="mode === 'flame-graph'" @click="mode = 'table-mode'">To Table mode</span>
+                <span class="btn btn-primary" v-else @click="mode = 'flame-graph'">To Flame Graph</span>
+
                 <span class="btn btn-primary" @click="settings.compact = !settings.compact"><input type="checkbox" name="compacted" id="chk-compact" v-model="settings.compact"> Compact</span>
                 <span class="btn btn-primary" @click="settings.inverted = !settings.inverted"><input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> Inverted</span>
                 <span class="btn btn-primary" @click="annotationsEditorShown = true">Annotations</span>
@@ -22,7 +25,13 @@
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFrames">Repair Broken Frames</span>
             </div>
         </div>
-        <div class="flame-graphs">
+        <div v-if="mode === 'table-mode'">
+            <frame-table-overview v-for="(flameGraph, flameGraphIndex) in flameGraphs"
+                :key="`frame-table-overview-${flameGraph.id}`"
+                :class="{'hidden': flameGraphIndex !== activeReportIndex}"
+                :frame-data="flameGraph.frameData"/>
+        </div>
+        <div class="flame-graphs" v-else>
             <flame-graph-canvas v-for="(flameGraph, flameGraphIndex) in flameGraphs"
                 :key="`flame-graph-canvas-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
@@ -67,10 +76,11 @@ import {parseProfilingLog, generateFrameData} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
+import FrameTableOverview from './components/FrameTableOverview.vue';
 
 
 export default {
-    components: {FlameGraphCanvas, AnnotationsEditor, Modal},
+    components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
 
     mounted() {
         this.loadReport('qwe', `
@@ -94,6 +104,7 @@ something else 4
     data() {
         return {
             annotations: [],
+            mode: 'flame-graph',
             annotationsEditorShown: false,
 
             flameGraphs: [],

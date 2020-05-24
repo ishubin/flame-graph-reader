@@ -142,11 +142,10 @@ function copyChildFrames(srcFrame, dstFrame) {
 
 
 class FrameData {
-    constructor(rootFrame, rects, framesMap, nameLookup) {
-        this.rootFrame = rootFrame;
-        this.rects     = rects;
-        this.framesMap = framesMap;
-        this.name      = nameLookup;
+    constructor(rootFrame, rects, framesMap) {
+        this.rootFrame  = rootFrame;
+        this.rects      = rects;
+        this.framesMap  = framesMap;
     }
 
     clone() {
@@ -289,10 +288,9 @@ class FrameData {
         enrichFrame(this.rootFrame);
 
         const newFrameData = generateFrameData(this.rootFrame);
-        this.rootFrame = newFrameData.rootFrame;
-        this.rects     = newFrameData.rects;
-        this.framesMap = newFrameData.framesMap;
-        this.name      = newFrameData.nameLookup;
+        this.rootFrame  = newFrameData.rootFrame;
+        this.rects      = newFrameData.rects;
+        this.framesMap  = newFrameData.framesMap;
     }
 
     traverseAncestorFramesUntil(frame, callback, conditionCallback) {
@@ -380,22 +378,12 @@ class FrameData {
 export function generateFrameData(currentFrame) {
     const rects = [];
     const framesMap = {};
-    const nameLookup = {};
-
-
-    const cacheByName = (frame) => {
-        if (!nameLookup.hasOwnProperty(frame.name)) {
-            nameLookup[frame.name] = [];
-        }
-        nameLookup[frame.name].push(frame);
-    };
 
     const maxSamples = currentFrame.samples;
 
     visitFrames(currentFrame, (frame, parentFrame) => {
         framesMap[frame.id] = frame;
         frame.childOffset = frame.selfSamples/maxSamples;
-        cacheByName(frame);
 
         let offset = 0;
         if (parentFrame) {
@@ -417,5 +405,5 @@ export function generateFrameData(currentFrame) {
         rects.push(rect);
     });
 
-    return new FrameData(currentFrame, rects, framesMap, nameLookup);
+    return new FrameData(currentFrame, rects, framesMap);
 }
