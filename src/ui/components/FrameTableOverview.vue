@@ -22,12 +22,14 @@
 </template>
 
 <script>
+
+const TABLE_OVERVIEW_SYMBOL = Symbol('_tableOverview');
+
 export default {
     props: ['frameData'],
 
     beforeMount() {
         this.loadTable();
-        this.sortTable();
     },
 
     data() {
@@ -41,6 +43,11 @@ export default {
 
     methods: {
         loadTable() {
+            if (this.frameData[TABLE_OVERVIEW_SYMBOL]) {
+                this.rows = this.frameData[TABLE_OVERVIEW_SYMBOL];
+                return;
+            }
+
             this.rows.length = 0;
 
             const nameMap = new Map();
@@ -82,11 +89,24 @@ export default {
                     });
                 }
             });
+
+            this.sortTable();
+            this.frameData[TABLE_OVERVIEW_SYMBOL] = this.rows;
         },
 
         sortTable() {
             const sortOrder = this.sortAscending ? 1: -1;
             this.rows.sort((a, b) => {
+                if (this.sortKey === 'name') {
+                    if (a.name < b.name) {
+                        return sortOrder
+                    }
+                    if (a.name > b.name) {
+                        return -sortOrder;
+                    }
+                    return 0;
+                } 
+
                 const s = sortOrder * (a[this.sortKey] - b[this.sortKey]);
                 if (s > 0) {
                     return 1;
