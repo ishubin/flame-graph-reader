@@ -227,10 +227,10 @@ export default {
                 let realTextWidth = ctx.measureText(name).width;
                 if (realTextWidth > w - 2 * padding) {
                     let numberOfCharacters = Math.floor(name.length * (w+2*padding) / realTextWidth);
-                    numberOfCharacters -= 4; // compensating for 3 dots
+                    numberOfCharacters -= 3; // compensating for ellipsis
                     if (numberOfCharacters > 0) {
 
-                        ctx.fillText(name.substring(0, numberOfCharacters) + '...', x + padding, y + 12, w);
+                        ctx.fillText(name.substring(0, numberOfCharacters) + '\u2026', x + padding, y + 12, w);
                     }
                 } else {
                     ctx.fillText(name, x + padding, y + 12, w);
