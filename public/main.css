@@ -193,7 +193,7 @@ ul.tabs .tab.tab-add-new input[type='file'] {
 }
 
 .main-view {
-    padding-top: 55px;
+    padding-top: 60px;
 }
 
 .flame-graph-details-panel {
@@ -380,4 +380,12 @@ textarea.annotation-json {
 }
 .frame-table-overview table thead th:hover {
     text-decoration: underline;
+}
+
+
+
+/****************** Flame Graph Canvas *********************/
+.flame-graph-canvas canvas {
+    user-select: none;
+    margin-bottom: 70px;
 }

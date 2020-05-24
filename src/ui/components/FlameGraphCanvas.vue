@@ -1,7 +1,7 @@
 <template>
-    <div>
+    <div class="flame-graph-canvas">
         <canvas ref="canvas" width="1200" height="700"
-            style="user-select: none; margin-bottom: 70px"
+            style=""
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
             @mousemove="onCanvasMouseMove"
@@ -156,7 +156,7 @@ export default {
             const ctx = canvas.getContext('2d');
 
             const width = window.innerWidth;
-            const height = (this.frameData.rootFrame.maxDepth + 1) * frameHeight;
+            const height = (this.frameData.rootFrame.maxDepth + 2) * frameHeight;
 
             this.canvasWidth = width;
             this.canvasHeight = height;

@@ -118,10 +118,10 @@ export function parseProfilingLog(log) {
 function color(name) {
     let hue = 0;
     for (let i = 0; i < name.length; i++) {
-        hue = (hue + name.charCodeAt(i)) % 50;
+        hue = (hue + name.charCodeAt(i) * 37) % 50 + 10;
     }
 
-    return {h: hue, s: 93, l: 61};
+    return {h: hue, s: 93, l: 71};
 }
 
 
