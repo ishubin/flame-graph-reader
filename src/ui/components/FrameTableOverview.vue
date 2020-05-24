@@ -1,6 +1,6 @@
 <template>
     <div class="frame-table-overview">
-        <input class="textfield search" type="text" v-model="searchKeyword" placeholder="Search...">
+        <input class="textfield search" type="text" v-model="searchKeyword" @input="onSearchInput" placeholder="Search...">
 
         <table class="table">
             <thead>
@@ -11,7 +11,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="row in rows" v-if="!searchKeyword || row.name.indexOf(searchKeyword) >= 0">
+                <tr v-for="row in filteredRows">
                     <td>{{row.name}}</td>
                     <td>{{row.samples}} (<b>{{row.ratio | ratioToPrettyPercentage}}</b>%)</td>
                     <td>{{row.selfSamples}} (<b>{{row.selfRatio | ratioToPrettyPercentage}}</b>%)</td>
@@ -35,9 +35,12 @@ export default {
     data() {
         return {
             rows: [],
+            filteredRows: [],
             searchKeyword: '',
             sortKey: 'samples',
-            sortAscending: false
+            sortAscending: false,
+
+            filteringTimerId: null
         };
     },
 
@@ -89,14 +92,14 @@ export default {
                     });
                 }
             });
-
             this.sortTable();
+            this.filterRows();
             this.frameData[TABLE_OVERVIEW_SYMBOL] = this.rows;
         },
 
         sortTable() {
             const sortOrder = this.sortAscending ? 1: -1;
-            this.rows.sort((a, b) => {
+            const sortingFunc = (a, b) => {
                 if (this.sortKey === 'name') {
                     if (a.name < b.name) {
                         return sortOrder
@@ -115,7 +118,10 @@ export default {
                     return -1;
                 }
                 return 0;
-            });
+            };
+
+            this.rows.sort(sortingFunc);
+            this.filteredRows.sort(sortingFunc);
         },
 
         toggleSort(sortKey) {
@@ -127,6 +133,26 @@ export default {
             }
             
             this.sortTable();
+        },
+
+        filterRows() {
+            this.filteredRows.length = 0;
+            for (let i = 0; i < this.rows.length; i++) {
+                if (!this.searchKeyword || this.rows[i].name.indexOf(this.searchKeyword) >= 0) {
+                    this.filteredRows.push(this.rows[i]);
+                }
+            }
+        },
+
+        /**
+         * Only filtering once user stopped typing
+         */
+        onSearchInput() {
+            if (this.filteringTimerId) {
+                clearTimeout(this.filteringTimerId);
+            }
+
+            this.filteringTimerId = setTimeout(() => this.filterRows(), 100);
         }
     },
     filters: {

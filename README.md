@@ -12,7 +12,9 @@ h3. Features
 - [x] Render in compact form
 - [x] Annotations quick on/off checkboxes in bottom panel
 - [x] Save annotations in local storage
-- [ ] By frame overview table mode.
+- [x] By frame overview table mode.
+    - [ ] with diff mode
+    - [x] improve search typing
 - [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request
 - [ ] Various color themes
 - [ ] Rename flame graph tab
