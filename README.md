@@ -13,8 +13,9 @@ h3. Features
 - [x] Annotations quick on/off checkboxes in bottom panel
 - [x] Save annotations in local storage
 - [x] By frame overview table mode.
-    - [ ] with diff mode
+    - [x] with diff mode
     - [x] improve search typing
 - [ ] Efficiency markers. Let user specify the real measured hits/second on every method, to check its cpu efficiency per request
 - [ ] Various color themes
 - [ ] Rename flame graph tab
+- [ ] Import from Chrome developer tools (JSON Trace Event Format)

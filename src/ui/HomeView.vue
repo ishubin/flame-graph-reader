@@ -29,7 +29,10 @@
             <frame-table-overview v-for="(flameGraph, flameGraphIndex) in flameGraphs"
                 :key="`frame-table-overview-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
-                :frame-data="flameGraph.frameData"/>
+                :frame-data="flameGraph.frameData"
+                :compared-graph-name="flameGraph.comparedWith"
+                :compared-graph-max-samples="flameGraph.comparedMaxSamples"
+                />
         </div>
         <div class="flame-graphs" v-else>
             <flame-graph-canvas v-for="(flameGraph, flameGraphIndex) in flameGraphs"
@@ -192,10 +195,11 @@ something else 4
             this.reportCounter += 1;
 
             this.flameGraphs.push({
-                name        : this.flameGraphs[this.activeReportIndex].name + ' vs ' + this.flameGraphs[idx].name,
-                id          : this.reportCounter,
-                frameData   : newFrameData,
-                comparedWith: this.flameGraphs[idx].name
+                name              : this.flameGraphs[this.activeReportIndex].name + ' vs ' + this.flameGraphs[idx].name,
+                id                : this.reportCounter,
+                frameData         : newFrameData,
+                comparedWith      : this.flameGraphs[idx].name,
+                comparedMaxSamples: this.flameGraphs[idx].frameData.rootFrame.samples
             });
 
             this.activeReportIndex = this.flameGraphs.length - 1;

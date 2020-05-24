@@ -348,9 +348,13 @@ class FrameData {
             const ratio = frame.samples / totalSamples;
             frame.otherRatio = otherFrame.samples / otherTotalSamples;
             frame.diffRatio = (frame.otherRatio - ratio) / ratio;
+            frame.otherSamples = otherFrame.samples;
+            frame.otherSelfSamples = otherFrame.selfSamples;
         } else {
             frame.diffRatio = -1.0;
             frame.otherRatio = 0.0;
+            frame.otherSamples = 0;
+            frame.otherSelfSamples = 0;
         }
 
         const rect = this.findRectForFrame(frame);

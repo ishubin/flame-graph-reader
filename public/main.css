@@ -64,7 +64,7 @@ a:hover, span.link:hover {
     border: 1px solid #2b90b5;
 }
 .btn.btn-primary {
-    background: #3a93db;
+    background: #2c5f7c;
     color: #fff;
     border: 1px solid #3372a6;
 }
@@ -87,6 +87,9 @@ a:hover, span.link:hover {
 /****************** Tabs **********************/
 
 ul.tabs {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -105,7 +108,8 @@ ul.tabs .tab {
 ul.tabs .tab .tab-name {
     background: rgb(198, 200, 201);
     cursor: pointer;
-    padding: 5px 25px;
+    font-size: 10pt;
+    padding: 5px 20px;
     white-space: nowrap;
     max-width: 200px;
     overflow: hidden;
@@ -118,8 +122,12 @@ ul.tabs .tab .tab-close {
     display: none;
     position: absolute;
     cursor: pointer;
-    left: 5px;
-    top: 0px;
+    font-size: 10pt;
+    left: 3px;
+    top: 3px;
+}
+ul.tabs .tab .tab-close:hover {
+    opacity: 0.7;
 }
 ul.tabs .tab.active .tab-close {
     color: white;
@@ -131,23 +139,23 @@ ul.tabs .tab:hover .tab-close {
 ul.tabs .tab.tab-add-new {
     position: relative;
     margin: 0;
-    width: 20px;
+    width: 40px;
     height: 30px;
 }
 ul.tabs .tab.tab-add-new > div {
     position: absolute;
-    top: 9px;
+    display: inline-block;
+    padding-left: 5px;
+    top: 12px;
     left: 0;
+    font-size: 10pt;
     width: 20px;
-    height: 30px;
+    height: 26px;
     overflow: hidden;
     background: #bbb;
 }
 ul.tabs .tab.tab-add-new > div:hover {
-    background: #333;
-}
-ul.tabs .tab.tab-add-new > div:hover span {
-    color: white;
+    background: #999;
 }
 
 ul.tabs .tab.tab-add-new input[type='file'] {
@@ -169,8 +177,13 @@ ul.tabs .tab.tab-add-new input[type='file'] {
     top: 0;
     left: 0;
     width: 100%;
-    height: 50px;
+    height: 60px;
     background: rgb(212, 212, 212);
+}
+
+.header .btn {
+    font-size: 10pt;
+    padding: 2px 5px;
 }
 
 .right-tool-bar {

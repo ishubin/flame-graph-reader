@@ -15,18 +15,22 @@
                         <span v-if="sortKey === 'samples' && this.sortAscending">&#x25B2;</span>
                         <span v-if="sortKey === 'samples' && !this.sortAscending">&#x25BC;</span>
                     </th>
+                    <th v-if="comparedGraphName"> % in {{comparedGraphName}}</th>
                     <th @click="toggleSort('selfSamples')">
                         Self Samples
                         <span v-if="sortKey === 'selfSamples' && this.sortAscending">&#x25B2;</span>
                         <span v-if="sortKey === 'selfSamples' && !this.sortAscending">&#x25BC;</span>
                     </th>
+                    <th v-if="comparedGraphName"> Self % in {{comparedGraphName}}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="row in filteredRows">
                     <td>{{row.name}}</td>
                     <td>{{row.samples}} (<b>{{row.ratio | ratioToPrettyPercentage}}</b>%)</td>
+                    <td v-if="comparedGraphName"><b>{{row.otherRatio | ratioToPrettyPercentage}}</b>%</td>
                     <td>{{row.selfSamples}} (<b>{{row.selfRatio | ratioToPrettyPercentage}}</b>%)</td>
+                    <td v-if="comparedGraphName"><b>{{row.otherSelfRatio | ratioToPrettyPercentage}}</b>%</td>
                 </tr>
             </tbody>
         </table>
@@ -38,7 +42,7 @@
 const TABLE_OVERVIEW_SYMBOL = Symbol('_tableOverview');
 
 export default {
-    props: ['frameData'],
+    props: ['frameData', 'comparedGraphName', 'comparedGraphMaxSamples'],
 
     beforeMount() {
         this.loadTable();
@@ -82,13 +86,17 @@ export default {
                 if (!hasSameFrameInAncestors(frame.name, parentFrame)) {
                     if (!nameMap.has(frame.name)) {
                         nameMap.set(frame.name, {
-                            samples: frame.samples,
-                            selfSamples: frame.selfSamples
+                            samples         : frame.samples,
+                            selfSamples     : frame.selfSamples,
+                            otherSamples    : frame.otherSamples || 0,
+                            otherSelfSamples: frame.otherSelfSamples || 0
                         });
                     } else {
                         const value = nameMap.get(frame.name);
                         value.samples += frame.samples;
                         value.selfSamples += frame.selfSamples;
+                        value.otherSamples += frame.otherSamples || 0;
+                        value.otherSelfSamples += frame.otherSelfSamples || 0;
                     }
                 }
             });
@@ -96,11 +104,13 @@ export default {
             nameMap.forEach((value, name) => {
                 if (name !== 'all') {
                     this.rows.push({
-                        name       : name,
-                        samples    : value.samples,
-                        selfSamples: value.selfSamples,
-                        ratio      : value.samples / this.frameData.rootFrame.samples,
-                        selfRatio  : value.selfSamples / this.frameData.rootFrame.samples,
+                        name          : name,
+                        samples       : value.samples,
+                        selfSamples   : value.selfSamples,
+                        ratio         : value.samples / this.frameData.rootFrame.samples,
+                        selfRatio     : value.selfSamples / this.frameData.rootFrame.samples,
+                        otherRatio    : this.comparedGraphMaxSamples ? value.otherSamples / this.comparedGraphMaxSamples    : 0,
+                        otherSelfRatio: this.comparedGraphMaxSamples ? value.otherSelfSamples / this.comparedGraphMaxSamples: 0
                     });
                 }
             });
