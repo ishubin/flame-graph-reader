@@ -104,7 +104,7 @@ export default {
     data() {
         return {
             grid              : createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth + 1),
-            normalFrameHeight : 20,
+            normalFrameHeight : 16,
             compactFrameHeight: 5,
             offsetX           : 0.0,
             zoomX             : 1.0,
@@ -176,7 +176,7 @@ export default {
             ctx.fill();
 
             ctx.strokeStyle = 'rgba(0, 0, 0, 1.0)';
-            ctx.font = '14px Courier new';
+            ctx.font = '12px Courier new';
 
 
             for (let i = 0; i < this.frameData.rects.length; i++) {
@@ -219,15 +219,21 @@ export default {
 
 
             if (!this.settings.compact) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
                 let w = x2 - x;
                 let name = rect.name;
-                if (w > 50 && name.length > 0) {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
-                    const maxSymbols = parseInt(Math.floor(w / 10));
-                    if (maxSymbols < name.length) {
-                        name = name.substring(0, maxSymbols) + '...';
+                let padding = 4;
+
+                let realTextWidth = ctx.measureText(name).width;
+                if (realTextWidth > w - 2 * padding) {
+                    let numberOfCharacters = Math.floor(name.length * (w+2*padding) / realTextWidth);
+                    numberOfCharacters -= 4; // compensating for 3 dots
+                    if (numberOfCharacters > 0) {
+
+                        ctx.fillText(name.substring(0, numberOfCharacters) + '...', x + padding, y + 12, w);
                     }
-                    ctx.fillText(name, x + 4, y + 14, w);
+                } else {
+                    ctx.fillText(name, x + padding, y + 12, w);
                 }
             }
         },
