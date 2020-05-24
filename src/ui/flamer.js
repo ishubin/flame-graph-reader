@@ -111,8 +111,16 @@ export function parseProfilingLog(log) {
     return rootFrame;
 }
 
+/**
+ * Generates a color based on name. This way frames are consistently colored and it is easier to compare two graphs
+ * @param {String} name 
+ */
 function color(name) {
-    let hue = parseInt(Math.floor(Math.random()*50));
+    let hue = 0;
+    for (let i = 0; i < name.length; i++) {
+        hue = (hue + name.charCodeAt(i)) % 50;
+    }
+
     return {h: hue, s: 93, l: 61};
 }
 

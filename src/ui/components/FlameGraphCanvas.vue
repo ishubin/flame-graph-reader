@@ -103,7 +103,7 @@ export default {
 
     data() {
         return {
-            grid              : createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth),
+            grid              : createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth + 1),
             normalFrameHeight : 20,
             compactFrameHeight: 5,
             offsetX           : 0.0,
@@ -293,7 +293,8 @@ export default {
         findRectAtPoint(x, y) {
             let foundRect = null;
             const frameHeight = this.getFrameHeight();
-            this.grid.lookupAtPoint(x, Math.floor(y/frameHeight), rect => {
+            const depth = Math.floor(y / frameHeight);
+            this.grid.lookupAtPoint(x, depth, rect => {
                 const ry1 = rect.d * frameHeight;
                 const ry2 = (rect.d + 1) * frameHeight;
 
@@ -495,7 +496,7 @@ export default {
 
         repairFrame(frame) {
             this.frameData.repairFrame(frame);
-            this.grid = createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth);
+            this.grid = createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth + 1);
 
             this.hoveredFrame.rect = null;
             this.annotateFrames();
