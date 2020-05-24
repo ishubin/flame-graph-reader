@@ -5,9 +5,21 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th @click="toggleSort('name')">Name</th>
-                    <th @click="toggleSort('samples')">Samples</th>
-                    <th @click="toggleSort('selfSamples')">Self Samples</th>
+                    <th @click="toggleSort('name')">
+                        Name
+                        <span v-if="sortKey === 'name' && this.sortAscending">&#x25B2;</span>
+                        <span v-if="sortKey === 'name' && !this.sortAscending">&#x25BC;</span>
+                    </th>
+                    <th @click="toggleSort('samples')">
+                        Samples
+                        <span v-if="sortKey === 'samples' && this.sortAscending">&#x25B2;</span>
+                        <span v-if="sortKey === 'samples' && !this.sortAscending">&#x25BC;</span>
+                    </th>
+                    <th @click="toggleSort('selfSamples')">
+                        Self Samples
+                        <span v-if="sortKey === 'selfSamples' && this.sortAscending">&#x25B2;</span>
+                        <span v-if="sortKey === 'selfSamples' && !this.sortAscending">&#x25BC;</span>
+                    </th>
                 </tr>
             </thead>
             <tbody>
