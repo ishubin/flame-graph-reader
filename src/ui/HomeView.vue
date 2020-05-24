@@ -86,6 +86,11 @@ something else 4
     beforeDestroy() {
     },
 
+    beforeMount() {
+        this.loadSettings(window.localStorage.getItem('settings'));
+        this.loadAnnotations(window.localStorage.getItem('annotations'));
+    },
+
     data() {
         return {
             annotations: [],
@@ -183,8 +188,54 @@ something else 4
             });
 
             this.activeReportIndex = this.flameGraphs.length - 1;
+        },
+
+        loadSettings(text) {
+            if (!text) {
+                return;
+            }
+
+            const json = JSON.parse(text);
+            if (json.hasOwnProperty('compact')) {
+                this.settings.compact = json.compact;
+            }
+            if (json.hasOwnProperty('inverted')) {
+                this.settings.inverted = json.inverted;
+            }
+        },
+
+        loadAnnotations(text) {
+            if (!text) {
+                return;
+            }
+
+            const json = JSON.parse(text);
+            if (Array.isArray(json)) {
+                this.annotations.length = 0;
+                for (let i = 0; i < json.length; i++) {
+                    this.annotations.push({
+                        name      : json[i].name,
+                        enabled   : json[i].enabled,
+                        regexTerms: json[i].regexTerms
+                    });
+                }
+            }
         }
     },
+    watch: {
+        annotations: {
+            deep: true,
+            handler(value){
+                window.localStorage.setItem('annotations', JSON.stringify(value));
+            }
+        },
+        settings: {
+            deep: true,
+            handler(value){
+                window.localStorage.setItem('settings', JSON.stringify(value));
+            }
+        }
+    }
 }
 </script>
 
