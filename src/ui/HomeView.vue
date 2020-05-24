@@ -22,7 +22,7 @@
                 <span class="btn btn-primary" @click="settings.inverted = !settings.inverted"><input type="checkbox" name="inverted" id="chk-inverted" v-model="settings.inverted"> Inverted</span>
                 <span class="btn btn-primary" @click="annotationsEditorShown = true">Annotations</span>
                 <span class="btn btn-primary" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
-                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFrames">Repair Broken Frames</span>
+                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFramesWarningShown = true">Repair Broken Frames</span>
             </div>
         </div>
         <div v-if="mode === 'table-mode'">
@@ -53,6 +53,16 @@
             <div v-for="(flameGraph, flameGraphIndex) in flameGraphs" v-if="flameGraphIndex !== activeReportIndex">
                 <span class="link" @click="compareFlameGraphs(flameGraphIndex)">{{flameGraph.name}}</span>
             </div>
+        </modal>
+
+
+        <modal v-if="repairBrokenFramesWarningShown" title="Warning!" :width="500" :height="200" primary-button="Repair"
+            @primary-submit="repairBrokenFrames(); repairBrokenFramesWarningShown = false"
+            @close="repairBrokenFramesWarningShown = false"
+            >
+            You should use it only in case your profiler was not able to collect complete stack-trace and it appeared cut off in the report.
+            It identifies the deepest stack traces and tries to attach them to another frame with the same name.
+            <b>Be cautious</b> as this functionality might not show the real picture.
         </modal>
 
 
@@ -120,7 +130,9 @@ something else 4
             },
             compareGraphsModal: {
                 shown: false
-            }
+            },
+
+            repairBrokenFramesWarningShown: false
         };
     },
 
