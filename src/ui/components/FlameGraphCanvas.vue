@@ -138,7 +138,9 @@ export default {
 
             // calculated annotated samples relative to hovered frame
             hoveredAnnotationSamples: null,
-            hoveredAnnotationMaxSamples: 1
+            hoveredAnnotationMaxSamples: 1,
+
+            annotationColorMap: {}
         }
     },
 
@@ -207,18 +209,8 @@ export default {
                 x2 = width;
             }
 
-            const saturation = rect.dimmed ? 30 : rect.color.s;
-
-            const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 85 : rect.color.l;
-
-            if (rect.annotated) {
-                ctx.fillStyle = `hsl(250, ${saturation}%, ${light}%)`;
-            } else {
-                ctx.fillStyle = `hsl(${rect.color.h}, ${saturation}%, ${light}%)`;
-            }
-
+            ctx.fillStyle = this.colorForRect(rect);
             ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
-
 
             if (!this.settings.compact) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
@@ -238,6 +230,28 @@ export default {
                     ctx.fillText(name, x + padding, y + 12, w);
                 }
             }
+        },
+
+        colorForRect(rect) {
+            let hue = 0;
+            for (let i = 0; i < rect.name.length; i++) {
+                hue = (hue + rect.name.charCodeAt(i) * 37) % 50 + 10;
+            }
+
+            const saturation = rect.dimmed ? 30 : 93;
+            const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 85 : 71;
+
+            if (rect.annotated) {
+                if (rect.annotatedWith) {
+                    const annotationColor = this.annotationColorMap[rect.annotatedWith];
+                    if (annotationColor) {
+                        return `hsl(${annotationColor.h}, ${saturation}%, ${light}%)`;
+                    }
+                }
+                return `hsl(250, ${saturation}%, ${light}%)`;
+            }
+
+            return `hsl(${hue}, ${saturation}%, ${light}%)`;
         },
 
         zoomOut() {
@@ -454,6 +468,10 @@ export default {
                     rect.annotatedWith = annotatedWith;
                 }
             });
+
+            for (let i = 0; i < this.annotations.length; i++) {
+                this.annotationColorMap[this.annotations[i].name] = this.annotations[i].color;
+            }
 
             this.toggleAnnotationSamples();
         },

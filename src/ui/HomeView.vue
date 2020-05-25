@@ -264,7 +264,8 @@ export default {
                     this.annotations.push({
                         name      : json[i].name,
                         enabled   : json[i].enabled,
-                        regexTerms: json[i].regexTerms
+                        regexTerms: json[i].regexTerms,
+                        color     : json[i].color || {h: 250, s: 0.9, l: 0.7}
                     });
                 }
             }

@@ -111,20 +111,6 @@ export function parseProfilingLog(log) {
     return rootFrame;
 }
 
-/**
- * Generates a color based on name. This way frames are consistently colored and it is easier to compare two graphs
- * @param {String} name 
- */
-function color(name) {
-    let hue = 0;
-    for (let i = 0; i < name.length; i++) {
-        hue = (hue + name.charCodeAt(i) * 37) % 50 + 10;
-    }
-
-    return {h: hue, s: 93, l: 71};
-}
-
-
 function copyChildFrames(srcFrame, dstFrame) {
     srcFrame.childFrames.forEach((childFrame, childFrameName) => {
         const dstChild = {
@@ -367,7 +353,7 @@ class FrameData {
                 hue = 60 * (1 + delta);
             }
 
-            rect.color = {h: hue, s: 90, l: 50};
+            // rect.color = {h: hue, s: 90, l: 50};
         }
 
         frame.childFrames.forEach((childFrame, childFrameName) => {
@@ -402,7 +388,6 @@ export function generateFrameData(currentFrame) {
             w       : frame.samples/maxSamples,
             x       : offset,
             d       : frame.depth,
-            color   : color(frame.name)
         };
         frame.x = offset;
         frame.rectIndex = rects.length;

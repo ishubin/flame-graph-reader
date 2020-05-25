@@ -395,3 +395,13 @@ textarea.annotation-json {
     user-select: none;
     margin-bottom: 70px;
 }
+
+
+/***************** Color Picker *******************/
+.color-picker-rect {
+    display: inline-block;
+    border: 1px solid #999;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}

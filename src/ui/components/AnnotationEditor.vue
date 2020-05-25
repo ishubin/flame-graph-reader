@@ -10,6 +10,7 @@
                 <thead>
                     <th width="20px"></th>
                     <th width="20px">On</th>
+                    <th width="20px"></th>
                     <th width="200px">Name</th>
                     <th>Regex</th>
                 </thead>
@@ -17,6 +18,7 @@
                     <tr v-for="(annotation, annotationIndex) in annotations">
                         <td><span class="close-link" @click="removeAnnotation(annotationIndex)">&#x2716;</span></td>
                         <td><input type="checkbox" v-model="annotation.enabled"></td>
+                        <td><span class="color-picker-rect" :style="{'background': hslToString(annotation.color)}" @click="toggleColorPickerForAnnotation(annotationIndex)"></span></td>
                         <td>
                             {{annotation.name}}
                         </td>
@@ -34,17 +36,21 @@
         <div v-else>
             <textarea class="annotation-json" v-model="json"></textarea>
         </div>
+
+        <modal :width="300" :height="400" v-if="colorPicker.annotationIndex >=0 && colorPicker.annotationIndex < annotations.length" @close="colorPicker.annotationIndex = -1">
+            <chrome-picker v-model="colorPicker.color" @input="onAnnotationColorUpdate"></chrome-picker>
+        </modal>
     </modal>
 </template>
 
 <script>
 import Modal from './Modal.vue';
-
+import VueColor from 'vue-color';
 
 export default {
     props: ['annotations'],
 
-    components: {Modal},
+    components: {Modal, 'chrome-picker': VueColor.Chrome},
 
     data() {
         return {
@@ -53,6 +59,11 @@ export default {
             newAnnotation: {
                 name: '',
                 regexTerms: '',
+            },
+
+            colorPicker: {
+                annotationIndex: -1,
+                color: {hex: '#0f0'}
             }
         }
     },
@@ -68,7 +79,8 @@ export default {
                     this.annotations.push({
                         name: this.newAnnotation.name,
                         regexTerms: [this.newAnnotation.regex],
-                        enabled: true
+                        enabled: true,
+                        color: {h: 250, s: 0.9, l: 0.7}
                     });
                 }
                 this.newAnnotation.name = '';   
@@ -105,6 +117,26 @@ export default {
             for(let i = 0; i < a.length; i++) {
                 this.annotations.push(a[i]);
             }
+        },
+
+        toggleColorPickerForAnnotation(index) {
+            if (index < 0 || index >= this.annotations.length) {
+                return;
+            }
+            this.colorPicker.color = this.annotations[index].color;
+            this.colorPicker.annotationIndex = index;
+        },
+
+        onAnnotationColorUpdate(color) {
+            if (this.colorPicker.annotationIndex < 0 || this.colorPicker.annotationIndex >= this.annotations.length) {
+                return;
+            }
+
+            this.annotations[this.colorPicker.annotationIndex].color = color.hsl;
+        },
+
+        hslToString(c) {
+            return `hsl(${c.h}, ${Math.round(c.s*100)}%, ${Math.round(c.l*100)}%)`;
         }
     },
 
