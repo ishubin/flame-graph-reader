@@ -210,6 +210,12 @@ ul.tabs .tab.tab-add-new input[type='file'] {
     background: #efefef;
 }
 
+
+.welcome {
+    padding: 20px;
+}
+
+
 pre {
     margin: 0;
     padding: 0;

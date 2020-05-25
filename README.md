@@ -15,6 +15,18 @@ h3. Features
 - [x] By frame overview table mode.
     - [x] with diff mode
     - [x] improve search typing
+- [ ] Unmatched samples are calculated incorrectly
+- [ ] Improve performance
+    - [ ] Parsing report
+    - [ ] Annotating
+    - [ ] Zooming
+    - [ ] Grid lookup perfromance (make use of x)
+- [ ] Repair frames does not work correctly (seeing duplicated frames)
+- [ ] Quick search for the same frame
+- [ ] Copy frame name to clipboard (from context menu)
+- [ ] Annotation Custom Colors
+- [ ] Progress bar
+- [ ] Mark code path as suspicious/good/bad
 - [ ] Various color themes
 - [ ] Rename flame graph tab
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)

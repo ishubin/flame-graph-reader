@@ -45,6 +45,27 @@
                 />
         </div>
 
+        <div class="welcome" v-if="flameGraphs.length === 0">
+            <h3>Welcome to Flame Graph Visualizer</h3>
+            <p>
+                It is an open-source CPU Flame Graph Visualizer. At this moment only folded log is supported. You can generate folded log from perf report using <a href="https://github.com/brendangregg/FlameGraph">these tools</a>
+            </p>
+
+            <div class="upload-report-button">
+                <span>Open Report...</span>
+                <input type="file" @change="onFileChange"/> 
+            </div>
+
+            <p>
+                Folded log looks like this:
+            </p>
+<pre><code>
+com.example.Main.main;com.example.Main.loadFile 4
+com.example.Main.main;com.example.Main.read 1
+java.lang.Thread.run;com.example.App.run 2
+</code></pre>
+        </div>
+
 
         <annotations-editor v-if="annotationsEditorShown" :annotations="annotations" @close="annotationsEditorShown = false"/>
 
@@ -96,14 +117,14 @@ export default {
     components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
 
     mounted() {
-        this.loadReport('qwe', `
-com.example.Main.main;com.example.Main.test 1
-com.example.Main.main;com.example.Main.test;java.lang.String.format 2
-a;c;b;we;q 3
-a;b;c;v;d;d;af;f;as;s;a;end 6
-c;v;d;d;af;zzzzzzzzzzzz 5
-something else 4
-        `);
+//         this.loadReport('qwe', `
+// com.example.Main.main;com.example.Main.test 1
+// com.example.Main.main;com.example.Main.test;java.lang.String.format 2
+// a;c;b;we;q 3
+// a;b;c;v;d;d;af;f;as;s;a;end 6
+// c;v;d;d;af;zzzzzzzzzzzz 5
+// something else 4
+//         `);
     },
 
     beforeDestroy() {

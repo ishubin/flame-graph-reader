@@ -40,13 +40,14 @@
                             <table class="table" v-if="hoveredAnnotationSamples">
                                 <thead>
                                     <tr>
-                                        <th>Unmatched</th>
-                                        <th v-for="annotation in annotations"><input type="checkbox" v-model="annotation.enabled"> {{annotation.name}}</th>
+                                        <th v-for="(annotation, annotationIndex) in annotations">
+                                            <input type="checkbox" v-model="annotation.enabled" :id="`chk-hovered-annotation-${annotationIndex}`">
+                                            <label :for="`chk-hovered-annotation-${annotationIndex}`">{{annotation.name}}</label>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{{calculateUnmatchedSamples(hoveredAnnotationSamples, hoveredAnnotationMaxSamples) | samplesToPercent(hoveredAnnotationMaxSamples)}}</td>
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{hoveredAnnotationSamples[annotation.name] | samplesToPercent(hoveredAnnotationMaxSamples) }}</span>
                                         </td>
@@ -56,13 +57,14 @@
                             <table class="table" v-else>
                                 <thead>
                                     <tr>
-                                        <th>Unmatched</th>
-                                        <th v-for="annotation in annotations"><input type="checkbox" v-model="annotation.enabled"> {{annotation.name}}</th>
+                                        <th v-for="(annotation, annotationIndex) in annotations">
+                                            <input type="checkbox" v-model="annotation.enabled" :id="`chk-annotation-${annotationIndex}`">
+                                            <label :for="`chk-annotation-${annotationIndex}`">{{annotation.name}}</label>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{{calculateUnmatchedSamples(annotationSamples, annotationMaxSamples) | samplesToPercent(annotationMaxSamples)}}</td>
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{annotationSamples[annotation.name] | samplesToPercent(annotationMaxSamples) }}</span>
                                         </td>
@@ -426,6 +428,7 @@ export default {
                 frame.annotationSamples = {};
 
                 let matched = false;
+                let annotatedWith = null;
                 for (let i = 0; i < this.annotations.length; i++) {
                     const annotation = this.annotations[i];
                     if (annotation.enabled) {
@@ -434,16 +437,21 @@ export default {
                             const regex = annotation.regexTerms[j];
                             if (frame.name.match(regex)) {
                                 matched = true;
+
+                                // The first annotation to match will be represented on rect color
+                                if (!annotatedWith) {
+                                    annotatedWith = annotation.name;
+                                }
                                 frame.annotationSamples[annotation.name] = frame.samples;
                             }
                         }
                     }
                 };
 
-
                 const rect = this.frameData.findRectForFrame(frame);
                 if (rect) {
                     rect.annotated = matched;
+                    rect.annotatedWith = annotatedWith;
                 }
             });
 
@@ -488,16 +496,6 @@ export default {
             };
 
             return maxAnnotationSamples;
-        },
-
-        calculateUnmatchedSamples(annotationSamples, annotationMaxSamples) {
-            let unmatched = annotationMaxSamples;
-            for (let name in annotationSamples) {
-                if (annotationSamples.hasOwnProperty(name)) {
-                    unmatched -= annotationSamples[name];
-                }
-            }
-            return unmatched;
         },
 
         repairFrame(frame) {
