@@ -24,9 +24,10 @@ h3. Features
 - [ ] Repair frames does not work correctly (seeing duplicated frames)
 - [ ] Quick search for the same frame
 - [ ] Copy frame name to clipboard (from context menu)
-- [ ] Annotation Custom Colors
+- [x] Annotation Custom Colors
 - [ ] Progress bar
 - [ ] Mark code path as suspicious/good/bad
 - [ ] Various color themes
 - [ ] Rename flame graph tab
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
+- [ ] export report to custom format (with annotations)

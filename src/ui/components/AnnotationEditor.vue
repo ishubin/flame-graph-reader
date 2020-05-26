@@ -37,8 +37,13 @@
             <textarea class="annotation-json" v-model="json"></textarea>
         </div>
 
-        <modal :width="300" :height="400" v-if="colorPicker.annotationIndex >=0 && colorPicker.annotationIndex < annotations.length" @close="colorPicker.annotationIndex = -1">
-            <chrome-picker v-model="colorPicker.color" @input="onAnnotationColorUpdate"></chrome-picker>
+        <modal :width="225" :height="340" v-if="colorPicker.annotationIndex >=0 && colorPicker.annotationIndex < annotations.length"
+            primaryButton="Apply"
+            closeButton="Cancel"
+            @close="colorPicker.annotationIndex = -1"
+            @primary-submit="applyColorForAnnotation(colorPicker.annotationIndex, colorPicker.colorForApplying)"
+            >
+            <chrome-picker v-model="colorPicker.color" @input="colorPicker.colorForApplying = arguments[0]"></chrome-picker>
         </modal>
     </modal>
 </template>
@@ -63,6 +68,7 @@ export default {
 
             colorPicker: {
                 annotationIndex: -1,
+                colorForApplying: null,
                 color: {hex: '#0f0'}
             }
         }
@@ -127,12 +133,13 @@ export default {
             this.colorPicker.annotationIndex = index;
         },
 
-        onAnnotationColorUpdate(color) {
-            if (this.colorPicker.annotationIndex < 0 || this.colorPicker.annotationIndex >= this.annotations.length) {
+        applyColorForAnnotation(annotationIndex, color) {
+            if (annotationIndex < 0 || annotationIndex >= this.annotations.length) {
                 return;
             }
 
-            this.annotations[this.colorPicker.annotationIndex].color = color.hsl;
+            this.annotations[annotationIndex].color = color.hsl;
+            this.colorPicker.annotationIndex = -1;
         },
 
         hslToString(c) {

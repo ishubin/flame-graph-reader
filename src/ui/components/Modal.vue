@@ -16,7 +16,7 @@
                    <div class="modal-footer">
                        <div class="modal-controls">
                            <span class="btn btn-primary" v-if="primaryButton" v-on:click="$emit('primary-submit')">{{primaryButton}}</span>
-                           <span class="btn btn-secondary" v-on:click="$emit('close')">Close</span>
+                           <span class="btn btn-secondary" v-on:click="$emit('close')">{{closeButton}}</span>
                        </div>
                    </div>
                </div>
@@ -40,6 +40,10 @@ export default {
         primaryButton: {
             type: String,
             default: null
+        },
+        closeButton: {
+            type: String,
+            default: 'Close'
         }
     },
 

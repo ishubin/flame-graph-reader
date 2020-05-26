@@ -211,6 +211,11 @@ export default {
 
             ctx.fillStyle = this.colorForRect(rect);
             ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
+            ctx.strokeStyle = this.backgroundColor;
+
+            if (x2 - x > 2) {
+                ctx.strokeRect(x, y, Math.max(1, x2-x), frameHeight);
+            }
 
             if (!this.settings.compact) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
@@ -235,7 +240,8 @@ export default {
         colorForRect(rect) {
             let hue = 0;
             for (let i = 0; i < rect.name.length; i++) {
-                hue = (hue + rect.name.charCodeAt(i) * 37) % 50 + 10;
+                // hue = (hue + rect.name.charCodeAt(i) * 37) % 15 + 40;
+                hue = 50;
             }
 
             const saturation = rect.dimmed ? 30 : 93;
