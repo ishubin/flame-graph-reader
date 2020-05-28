@@ -15,6 +15,8 @@
             </ul>
 
             <div class="right-tool-bar">
+                <input type="text" v-model="searchKeyword" class="textfield" placeholder="Search" @keydown.enter="toggleQuickSearch"/>
+
                 <span class="btn btn-primary" v-if="mode === 'flame-graph'" @click="mode = 'table-mode'">To Table mode</span>
                 <span class="btn btn-primary" v-else @click="mode = 'flame-graph'">To Flame Graph</span>
 
@@ -42,6 +44,7 @@
                 :annotations="annotations"
                 :settings="settings"
                 :compared-graph-name="flameGraph.comparedWith"
+                :search-keyword="searchKeywordForFlameGraph"
                 />
         </div>
 
@@ -117,14 +120,14 @@ export default {
     components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
 
     mounted() {
-//         this.loadReport('qwe', `
-// com.example.Main.main;com.example.Main.test 1
-// com.example.Main.main;com.example.Main.test;java.lang.String.format 2
-// a;c;b;we;q 3
-// a;b;c;v;d;d;af;f;as;s;a;end 6
-// c;v;d;d;af;zzzzzzzzzzzz 5
-// something else 4
-//         `);
+        this.loadReport('qwe', `
+com.example.Main.main;com.example.Main.test 1
+com.example.Main.main;com.example.Main.test;java.lang.String.format 2
+a;c;b;we;q 3
+a;b;c;v;d;d;af;f;as;s;a;end 6
+c;v;d;d;af;zzzzzzzzzzzz 5
+something else 4
+        `);
     },
 
     beforeDestroy() {
@@ -153,7 +156,10 @@ export default {
                 shown: false
             },
 
-            repairBrokenFramesWarningShown: false
+            repairBrokenFramesWarningShown: false,
+
+            searchKeyword: '',
+            searchKeywordForFlameGraph: ''
         };
     },
 
@@ -269,6 +275,10 @@ export default {
                     });
                 }
             }
+        },
+
+        toggleQuickSearch() {
+            this.searchKeywordForFlameGraph = this.searchKeyword;
         }
     },
     watch: {

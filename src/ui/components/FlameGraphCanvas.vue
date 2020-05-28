@@ -40,7 +40,8 @@
                             <table class="table" v-if="hoveredAnnotationSamples">
                                 <thead>
                                     <tr>
-                                        <th v-for="(annotation, annotationIndex) in annotations">
+                                        <th v-if="searchKeyword">Quick Search</th>
+                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color)}">
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-hovered-annotation-${annotationIndex}`">
                                             <label :for="`chk-hovered-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
@@ -48,6 +49,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td v-if="searchKeyword">{{hoveredQuickSearchSamples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{hoveredAnnotationSamples[annotation.name] | samplesToPercent(hoveredAnnotationMaxSamples) }}</span>
                                         </td>
@@ -57,7 +59,8 @@
                             <table class="table" v-else>
                                 <thead>
                                     <tr>
-                                        <th v-for="(annotation, annotationIndex) in annotations">
+                                        <th v-if="searchKeyword">Quick Search</th>
+                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color)}">
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-annotation-${annotationIndex}`">
                                             <label :for="`chk-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
@@ -65,6 +68,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td v-if="searchKeyword">{{quickSearchSamples | samplesToPercent(annotationMaxSamples) }}</td>
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{annotationSamples[annotation.name] | samplesToPercent(annotationMaxSamples) }}</span>
                                         </td>
@@ -97,11 +101,14 @@ import Modal from './Modal.vue';
 import ContextMenu from './ContextMenu.vue';
 import {createGridFromRects} from '../grid';
 
+
+const QUICK_SEARCH = Symbol('Quick Search');
+
 export default {
 
     components: {Modal, ContextMenu},
 
-    props: ['frameData', 'annotations', 'settings', 'comparedGraphName'],
+    props: ['frameData', 'annotations', 'settings', 'comparedGraphName', 'searchKeyword'],
 
     data() {
         return {
@@ -134,10 +141,12 @@ export default {
 
             // calculated annotated samples relative to zoomed in rect
             annotationSamples: {},
+            quickSearchSamples: 0,
             annotationMaxSamples: 1,
 
             // calculated annotated samples relative to hovered frame
             hoveredAnnotationSamples: null,
+            hoveredQuickSearchSamples: 0,
             hoveredAnnotationMaxSamples: 1,
 
             annotationColorMap: {}
@@ -412,6 +421,7 @@ export default {
 
                     this.hoveredAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(frame);
                     this.hoveredAnnotationMaxSamples = frame.samples;
+                    this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
                 }
             } else {
                 this.hoveredAnnotationSamples = null;
@@ -467,6 +477,14 @@ export default {
                     }
                 };
 
+                if (this.searchKeyword && frame.name.indexOf(this.searchKeyword) >= 0) {
+                    matched = true;
+                    annotatedWith = 'Search';
+                    frame.annotationSamples[QUICK_SEARCH] = frame.samples;
+                } else {
+                    frame.annotationSamples[QUICK_SEARCH] = 0;
+                }
+
                 const rect = this.frameData.findRectForFrame(frame);
                 if (rect) {
                     rect.annotated = matched;
@@ -488,11 +506,16 @@ export default {
             }
             this.annotationMaxSamples = relativeFrame.samples;
             this.annotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(relativeFrame);
+            this.quickSearchSamples = this.annotationSamples[QUICK_SEARCH];
         },
 
         calculateMaxAnotationSamplesRelativeToFrame(frame) {
             const maxAnnotationSamples = {};
             const childAnnotationSamplesSummary = {};
+
+            maxAnnotationSamples[QUICK_SEARCH] = 0;
+            childAnnotationSamplesSummary[QUICK_SEARCH] = 0;
+
             for (let i = 0; i < this.annotations.length; i++) {
                 childAnnotationSamplesSummary[this.annotations[i].name] = 0;
                 maxAnnotationSamples[this.annotations[i].name] = 0;
@@ -505,18 +528,28 @@ export default {
                         childAnnotationSamplesSummary[this.annotations[i].name] += childMaxAnnotationSamples[this.annotations[i].name];
                     }
                 }
+                childAnnotationSamplesSummary[QUICK_SEARCH] += childMaxAnnotationSamples[QUICK_SEARCH];
             });
 
             for (let i = 0; i < this.annotations.length; i++) {
                 if (this.annotations[i].enabled) {
-                    const selfSample = frame.annotationSamples[this.annotations[i].name];
-                    if (selfSample === 0) {
+                    const selfMatchedSamples = frame.annotationSamples[this.annotations[i].name];
+                    if (selfMatchedSamples === 0) {
                         maxAnnotationSamples[this.annotations[i].name] = childAnnotationSamplesSummary[this.annotations[i].name];
                     } else {
-                        maxAnnotationSamples[this.annotations[i].name] = selfSample;
+                        maxAnnotationSamples[this.annotations[i].name] = selfMatchedSamples;
                     }
                 }
             };
+
+            if (this.searchKeyword) {
+                const selfMatchedSamples = frame.annotationSamples[QUICK_SEARCH];
+                if (selfMatchedSamples === 0) {
+                    maxAnnotationSamples[QUICK_SEARCH] = childAnnotationSamplesSummary[QUICK_SEARCH];
+                } else {
+                    maxAnnotationSamples[QUICK_SEARCH] = selfMatchedSamples;
+                }
+            }
 
             return maxAnnotationSamples;
         },
@@ -529,6 +562,10 @@ export default {
             this.annotateFrames();
             this.toggleAnnotationSamples();
             this.render();
+        },
+
+        hslToString(c) {
+            return `hsl(${c.h}, ${Math.round(c.s*100)}%, ${Math.round(c.l*100)}%)`;
         }
     },
     filters: {
@@ -551,6 +588,10 @@ export default {
                 this.annotateFrames();
                 this.render();
             }
+        },
+        searchKeyword() {
+            this.annotateFrames();
+            this.render();
         },
         settings: {
             deep: true,
