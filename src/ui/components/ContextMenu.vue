@@ -2,7 +2,10 @@
     <div ref="contextMenuContainer" class="context-menu" :style="{left: `${realX}px`, top: `${realY}px`}">
         <ul>
             <li v-for="option in options">
-                <span @click="$emit('selected', option)">{{option.name}}</span>
+                <div @click="$emit('selected', option)">
+                    <i v-if="option.icon" class="icon" :class="option.icon"></i>
+                    {{option.name}}
+                </div>
             </li>
         </ul>
     </div>

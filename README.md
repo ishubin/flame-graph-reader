@@ -15,14 +15,13 @@ h3. Features
 - [x] By frame overview table mode.
     - [x] with diff mode
     - [x] improve search typing
-- [ ] Unmatched samples are calculated incorrectly
 - [ ] Improve performance
     - [ ] Parsing report
     - [ ] Annotating
     - [ ] Zooming
     - [ ] Grid lookup perfromance (make use of x)
 - [ ] Repair frames does not work correctly (seeing duplicated frames)
-- [ ] Quick search for the same frame
+- [x] Quick search for the same frame
 - [ ] Copy frame name to clipboard (from context menu)
 - [x] Annotation Custom Colors
 - [ ] Progress bar

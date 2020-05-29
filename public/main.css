@@ -332,14 +332,20 @@ code.oneliner {
     padding: 0;
     white-space:nowrap;
 }
-.context-menu ul li span {
+.context-menu ul li div {
     display: block;
-    padding: 5px 10px;
+    position: relative;
+    padding: 5px 10px 5px 30px;
     white-space: nowrap;
     cursor: pointer;
 }
-.context-menu ul li span:hover {
+.context-menu ul li div:hover {
     background: #afd7ee;
+}
+.context-menu ul li div .icon {
+    position: absolute;
+    top: 5px;
+    left: 7px;
 }
 
 

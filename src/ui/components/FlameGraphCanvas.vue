@@ -359,25 +359,34 @@ export default {
             this.contextMenu.y = my;
             this.contextMenu.options = [{
                 name: 'Zoom',
-                id: 'zoom'
+                id: 'zoom',
+                icon: 'fa fa-search-plus'
             },{
                 name: 'Zoom Out',
-                id: 'zoom-out'
+                id: 'zoom-out',
+                icon: 'fa fa-search-minus'
+            }, {
+                name: 'Download as PNG',
+                id: 'download',
+                icon: 'fa fa-download'
             }];
 
             if (rect) {
                 this.contextMenu.options.push({
                     name: 'Zoom Into Frame',
-                    id: 'zoom-into-frame'
+                    id: 'zoom-into-frame',
+                    icon: 'fa fa-expand'
                 });
                 this.contextMenu.options.push({
                     name: 'Show Stack Trace',
-                    id: 'show-stack-trace'
+                    id: 'show-stack-trace',
+                    icon: 'fa fa-bars'
                 });
                 if (rect.parentId === 0) {
                     this.contextMenu.options.push({
                         name: 'Repair Frame',
-                        id: 'repair-frame'
+                        id: 'repair-frame',
+                        icon: 'fa fa-wrench',
                     });
                 }
             }
@@ -396,9 +405,26 @@ export default {
                 this.shownStackTrace = this.frameData.collectStackTrace(this.contextMenu.rect.id);
             } else if (option.id === 'repair-frame') {
                 this.repairFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
+            } else if (option.id === 'download') {
+                this.downloadCanvasAsImage();
             }
 
             this.contextMenu.shown = false;
+        },
+
+        downloadCanvasAsImage() {
+            const canvasData = this.$refs.canvas.toDataURL();
+            const link = document.createElement('a');
+            document.body.appendChild(link);
+
+            try {
+                link.href = canvasData;
+                link.download = 'flame-graph.png';
+                link.click();
+            } catch(e) {
+                console.error(e);
+            }
+            setTimeout(() => document.body.removeChild(link), 100);
         },
 
         onCanvasMouseMove(event) {
