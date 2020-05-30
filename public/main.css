@@ -319,6 +319,7 @@ code.oneliner {
 .context-menu {
     position: fixed;
     display: inline-block;
+    box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.4);
 }
 .context-menu ul {
     display: inline-block;

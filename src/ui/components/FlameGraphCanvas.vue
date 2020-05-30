@@ -104,6 +104,12 @@ import {createGridFromRects} from '../grid';
 
 const QUICK_SEARCH = Symbol('Quick Search');
 
+const Level = {
+    Good: 'good',
+    Suspicious: 'suspicious',
+    Bad: 'bad'
+};
+
 export default {
 
     components: {Modal, ContextMenu},
@@ -148,8 +154,6 @@ export default {
             hoveredAnnotationSamples: null,
             hoveredQuickSearchSamples: 0,
             hoveredAnnotationMaxSamples: 1,
-
-            annotationColorMap: {}
         }
     },
 
@@ -252,18 +256,12 @@ export default {
                 hue = (hue + rect.name.charCodeAt(i) * 37) % 15 + 40;
             }
 
+            if (rect.color) {
+                hue = rect.color.h;
+            }
+
             const saturation = rect.dimmed ? 30 : 93;
             const light = (this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id) ? 85 : 71;
-
-            if (rect.annotated) {
-                if (rect.annotatedWith) {
-                    const annotationColor = this.annotationColorMap[rect.annotatedWith];
-                    if (annotationColor) {
-                        return `hsl(${annotationColor.h}, ${saturation}%, ${light}%)`;
-                    }
-                }
-                return `hsl(250, ${saturation}%, ${light}%)`;
-            }
 
             return `hsl(${hue}, ${saturation}%, ${light}%)`;
         },
@@ -389,6 +387,30 @@ export default {
                         icon: 'fa fa-wrench',
                     });
                 }
+
+                this.contextMenu.options.push({
+                    name: 'Mark as Good',
+                    id: 'mark',
+                    level: Level.Good,
+                    icon: 'fa fa-thumbs-up'
+                });
+                this.contextMenu.options.push({
+                    name: 'Mark as Suspicious',
+                    id: 'mark',
+                    level: Level.Suspicious,
+                    icon: 'fa fa-question-circle'
+                });
+                this.contextMenu.options.push({
+                    name: 'Mark as Bad',
+                    id: 'mark',
+                    level: Level.Bad,
+                    icon: 'fa fa-thumbs-down'
+                });
+                this.contextMenu.options.push({
+                    name: 'Clear Mark',
+                    id: 'mark',
+                    level: null,
+                });
             }
 
             this.contextMenu.shown = true;
@@ -407,9 +429,16 @@ export default {
                 this.repairFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
             } else if (option.id === 'download') {
                 this.downloadCanvasAsImage();
+            } else if (option.id === 'mark') {
+                this.markFrameAs(this.frameData.findFrameById(this.contextMenu.rect.id), option.level);
             }
 
             this.contextMenu.shown = false;
+        },
+
+        markFrameAs(frame, level) {
+            frame.level = level;
+            this.annotateFrames();
         },
 
         downloadCanvasAsImage() {
@@ -482,30 +511,30 @@ export default {
                 // stores annotation samples per frame
                 frame.annotationSamples = {};
 
-                let matched = false;
-                let annotatedWith = null;
+                let annotatedIndex = -1;
                 for (let i = 0; i < this.annotations.length; i++) {
                     const annotation = this.annotations[i];
                     if (annotation.enabled) {
                         frame.annotationSamples[annotation.name] = 0;
-                        for (let j = 0; j < annotation.regexTerms.length; j++) {
+
+                        let regexMatched = false;
+                        for (let j = 0; j < annotation.regexTerms.length && !regexMatched; j++) {
                             const regex = annotation.regexTerms[j];
                             if (frame.name.match(regex)) {
-                                matched = true;
-
                                 // The first annotation to match will be represented on rect color
-                                if (!annotatedWith) {
-                                    annotatedWith = annotation.name;
+                                if (annotatedIndex < 0) {
+                                    annotatedIndex = i;
                                 }
                                 frame.annotationSamples[annotation.name] = frame.samples;
+                                regexMatched = true;
                             }
                         }
                     }
                 };
 
+                let quickSearchMatched = false;
                 if (this.searchKeyword && frame.name.indexOf(this.searchKeyword) >= 0) {
-                    matched = true;
-                    annotatedWith = 'Search';
+                    quickSearchMatched = true;
                     frame.annotationSamples[QUICK_SEARCH] = frame.samples;
                 } else {
                     frame.annotationSamples[QUICK_SEARCH] = 0;
@@ -513,14 +542,14 @@ export default {
 
                 const rect = this.frameData.findRectForFrame(frame);
                 if (rect) {
-                    rect.annotated = matched;
-                    rect.annotatedWith = annotatedWith;
+                    if (quickSearchMatched) {
+                        // TODO make color customizable
+                        rect.color = {h: 250, s: 0.9, l: 0.7};
+                    } else if (0 <= annotatedIndex && annotatedIndex < this.annotations.length) {
+                        rect.color = this.annotations[annotatedIndex].color;
+                    }
                 }
             });
-
-            for (let i = 0; i < this.annotations.length; i++) {
-                this.annotationColorMap[this.annotations[i].name] = this.annotations[i].color;
-            }
 
             this.toggleAnnotationSamples();
         },
