@@ -227,11 +227,16 @@ something else 4
         },
 
         loadFlameGraphReaderFormat(json) {
+            const frameData = loadFlameGraphFormat(json);
+
+            if (json.annotations && json.annotations.length > 0) {
+                this.annotations = json.annotations;
+            }
             this.reportCounter += 1;
             return {
                 name: json.name,
                 id: this.reportCounter,
-                frameData: loadFlameGraphFormat(json),
+                frameData,
                 comparedWith: null
             };
         },
@@ -339,6 +344,10 @@ flamer, flame-graph-visualizer, flamescope, FlameReader, Flame Graph Reader
                 name: flameGraphReport.name,
                 frameData: flameGraphReport.frameData.toJSONObject()
             };
+
+            if (this.annotations.length > 0) {
+                json.annotations = this.annotations;
+            }
 
             const link = document.createElement('a');
             document.body.appendChild(link);

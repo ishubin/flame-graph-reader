@@ -29,4 +29,4 @@ h3. Features
 - [ ] Various color themes
 - [ ] Rename flame graph tab
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
-- [ ] export report to custom format (with annotations)
+- [x] export report to custom format (with annotations)
