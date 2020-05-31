@@ -172,6 +172,9 @@ class FrameData {
     }
 
     findRectForFrame(frame) {
+        if (!frame) {
+            return null;
+        }
         return this.findRectByIndex(frame.rectIndex);
     }
 

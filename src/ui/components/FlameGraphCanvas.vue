@@ -104,10 +104,20 @@ import {createGridFromRects} from '../grid';
 
 const QUICK_SEARCH = Symbol('Quick Search');
 
-const Level = {
+const Mark = {
     Good: 'good',
     Suspicious: 'suspicious',
-    Bad: 'bad'
+    Bad: 'bad',
+
+    hueFor(mark) {
+        if (mark === Mark.Good) {
+            return 118;
+        }
+        if (mark === Mark.Suspicious) {
+            return 21;
+        }
+        return 352;
+    }
 };
 
 export default {
@@ -250,14 +260,26 @@ export default {
             }
         },
 
+        //TODO customize this coloring
+        hueForName(name) {
+            let hue = 0;
+            for (let i = 0; i < name.length; i++) {
+                hue = (hue + name.charCodeAt(i) * 37) % 15 + 40;
+            }
+            return hue;
+        },
+
         colorForRect(rect) {
             let hue = 0;
-            for (let i = 0; i < rect.name.length; i++) {
-                hue = (hue + rect.name.charCodeAt(i) * 37) % 15 + 40;
-            }
-
-            if (rect.color) {
-                hue = rect.color.h;
+            if (rect.quickSearchMatched) {
+                // TODO customize quick search coloring
+                hue = 280;
+            } else if (rect.annotationIndex >= 0) {
+                hue = this.annotations[rect.annotationIndex].color.h;
+            } else if (rect.mark) {
+                hue = Mark.hueFor(rect.mark);
+            } else {
+                hue = this.hueForName(rect.name);
             }
 
             const saturation = rect.dimmed ? 30 : 93;
@@ -391,26 +413,29 @@ export default {
                 this.contextMenu.options.push({
                     name: 'Mark as Good',
                     id: 'mark',
-                    level: Level.Good,
+                    mark: Mark.Good,
                     icon: 'fa fa-thumbs-up'
                 });
                 this.contextMenu.options.push({
                     name: 'Mark as Suspicious',
                     id: 'mark',
-                    level: Level.Suspicious,
+                    mark: Mark.Suspicious,
                     icon: 'fa fa-question-circle'
                 });
                 this.contextMenu.options.push({
                     name: 'Mark as Bad',
                     id: 'mark',
-                    level: Level.Bad,
+                    mark: Mark.Bad,
                     icon: 'fa fa-thumbs-down'
                 });
-                this.contextMenu.options.push({
-                    name: 'Clear Mark',
-                    id: 'mark',
-                    level: null,
-                });
+
+                const frame = this.frameData.findFrameById(rect.id);
+                if (frame.mark) {
+                    this.contextMenu.options.push({
+                        name: 'Clear Mark',
+                        id: 'clear-mark',
+                    });
+                }
             }
 
             this.contextMenu.shown = true;
@@ -430,15 +455,24 @@ export default {
             } else if (option.id === 'download') {
                 this.downloadCanvasAsImage();
             } else if (option.id === 'mark') {
-                this.markFrameAs(this.frameData.findFrameById(this.contextMenu.rect.id), option.level);
+                this.markFrameAs(this.frameData.findFrameById(this.contextMenu.rect.id), option.mark);
+            } else if (option.id === 'clear-mark') {
+                this.clearMarkForFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
             }
 
             this.contextMenu.shown = false;
         },
 
-        markFrameAs(frame, level) {
-            frame.level = level;
+        clearMarkForFrame(frame) {
+            frame.mark = null;
             this.annotateFrames();
+            this.render();
+        },
+
+        markFrameAs(frame, mark) {
+            frame.mark = mark;
+            this.annotateFrames();
+            this.render();
         },
 
         downloadCanvasAsImage() {
@@ -541,13 +575,18 @@ export default {
                 }
 
                 const rect = this.frameData.findRectForFrame(frame);
-                if (rect) {
-                    if (quickSearchMatched) {
-                        // TODO make color customizable
-                        rect.color = {h: 250, s: 0.9, l: 0.7};
-                    } else if (0 <= annotatedIndex && annotatedIndex < this.annotations.length) {
-                        rect.color = this.annotations[annotatedIndex].color;
-                    }
+                const parentRect = this.frameData.findRectForFrame(parentFrame);
+                rect.annotationIndex = annotatedIndex;
+                rect.quickSearchMatched = quickSearchMatched;
+
+                if (frame.mark) {
+                    rect.mark = frame.mark;
+                } else if (parentRect && parentRect.mark) {
+                    // keeping the mark coloring form ancestor
+                    rect.mark = parentRect.mark;
+                } else if (!parentRect || !parentRect.mark) {
+                    // resetting mark as it was probably cleared by user
+                    rect.mark = null;
                 }
             });
 
