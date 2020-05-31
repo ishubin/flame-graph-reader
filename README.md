@@ -25,7 +25,7 @@ h3. Features
 - [ ] Copy frame name to clipboard (from context menu)
 - [x] Annotation Custom Colors
 - [ ] Progress bar
-- [ ] Mark code path as suspicious/good/bad
+- [x] Mark code path as suspicious/good/bad
 - [ ] Various color themes
 - [ ] Rename flame graph tab
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)

@@ -134,6 +134,27 @@ class FrameData {
         this.framesMap  = framesMap;
     }
 
+    toJSONObject() {
+        const _traverse = (frame) => {
+            const jsonFrame = {
+                childFrames: {},
+                samples: frame.samples,
+                selfSamples: frame.selfSamples,
+            };
+            if (frame.mark) {
+                jsonFrame.mark = frame.mark;
+            }
+            frame.childFrames.forEach((childFrame, childFrameName) => {
+                jsonFrame.childFrames[childFrameName] = _traverse(childFrame);
+            });
+
+            return jsonFrame;
+        };
+        return {
+            frame: _traverse(this.rootFrame)
+        };
+    }
+
     clone() {
         const newRoot = {
             name       : this.rootFrame.name,
@@ -398,4 +419,33 @@ export function generateFrameData(currentFrame) {
     });
 
     return new FrameData(currentFrame, rects, framesMap);
+}
+
+
+export function loadFlameGraphFormat(json) {
+    const convertFrame = (jsonFrame, jsonFrameName, parentFrame) => {
+        const frame = {
+            name: jsonFrameName,
+            samples: jsonFrame.samples,
+            selfSamples: jsonFrame.selfSamples,
+            childFrames: new Map(),
+            depth: parentFrame ? parentFrame.depth + 1 : 0
+        };
+        if (jsonFrame.mark) {
+            frame.mark = jsonFrame.mark;
+        }
+        if (jsonFrame.childFrames) {
+            for (let childName in jsonFrame.childFrames) {
+                if (jsonFrame.childFrames.hasOwnProperty(childName)) {
+                    frame.childFrames.set(childName, convertFrame(jsonFrame.childFrames[childName], childName, frame));
+                }
+            }
+        }
+
+        return frame;
+    };
+
+    const rootFrame = convertFrame(json.frameData.frame, 'all');
+    enrichFrame(rootFrame);
+    return generateFrameData(rootFrame);
 }

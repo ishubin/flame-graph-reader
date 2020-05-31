@@ -25,6 +25,7 @@
                 <span class="btn btn-primary" @click="annotationsEditorShown = true">Annotations</span>
                 <span class="btn btn-primary" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFramesWarningShown = true">Repair Broken Frames</span>
+                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="saveFlameGraph(flameGraphs[activeReportIndex])">Save</span>
             </div>
         </div>
         <div v-if="mode === 'table-mode'">
@@ -109,7 +110,7 @@ java.lang.Thread.run;com.example.App.run 2
 </template>
 
 <script>
-import {parseProfilingLog, generateFrameData} from './flamer';
+import {parseProfilingLog, generateFrameData, loadFlameGraphFormat} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
@@ -181,20 +182,66 @@ something else 4
         loadReport(name, text) {
             this.isLoadingFlameGraph = true;
             
+            // doing this so that Vue is able to show loading popup. Otherwise it gets stuck
             setTimeout(() => {
-                this.reportCounter += 1;
-                const rootFrame = parseProfilingLog(text);
-                const frameData = generateFrameData(rootFrame);
-
-                this.flameGraphs.push({
-                    name: name,
-                    id: this.reportCounter,
-                    frameData,
-                    comparedWith: null
-                });
-                this.activeReportIndex = this.flameGraphs.length - 1;
+                try {
+                    const flameGraph = this.loadFlameGraph(name, text);
+                    this.flameGraphs.push(flameGraph);
+                    this.activeReportIndex = this.flameGraphs.length - 1;
+                } catch(e) {
+                    alert('Could not load report. Unrecognized format');
+                }
                 this.isLoadingFlameGraph = false;
             }, 50);
+        },
+
+        loadFlameGraph(name, text) {
+            const json = this.loadJson(text);
+            if (json) {
+                return this.loadJsonReport(json);
+            }
+
+            // if it's not json, then we try to parse it as a folded log
+            const rootFrame = parseProfilingLog(text);
+            const frameData = generateFrameData(rootFrame);
+
+            this.reportCounter += 1;
+            return {
+                name: name,
+                id: this.reportCounter,
+                frameData,
+                comparedWith: null
+            };
+        },
+
+        loadJsonReport(json) {
+            if (json.type === 'flame-graph-reader') {
+                try {
+                    return this.loadFlameGraphReaderFormat(json);
+                } catch(e) {
+                    console.error('Could not lad flame graph from json', e);
+                    throw e;
+                }
+            }
+            throw new Error('Unrecognized format');
+        },
+
+        loadFlameGraphReaderFormat(json) {
+            this.reportCounter += 1;
+            return {
+                name: json.name,
+                id: this.reportCounter,
+                frameData: loadFlameGraphFormat(json),
+                comparedWith: null
+            };
+        },
+
+        loadJson(text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                return null;
+            }
         },
 
         closeFlameGraph(index) {
@@ -277,8 +324,33 @@ something else 4
             }
         },
 
+        /*
+flamer, flame-graph-visualizer, flamescope, FlameReader, Flame Graph Reader
+        */
+
         toggleQuickSearch() {
             this.searchKeywordForFlameGraph = this.searchKeyword;
+        },
+
+        saveFlameGraph(flameGraphReport) {
+            const json = {
+                type: 'flame-graph-reader',
+                version: '1',
+                name: flameGraphReport.name,
+                frameData: flameGraphReport.frameData.toJSONObject()
+            };
+
+            const link = document.createElement('a');
+            document.body.appendChild(link);
+
+            try {
+                link.href = 'data:application/json;base64,' + btoa(JSON.stringify(json));
+                link.download = flameGraphReport.name + '.flamegraph.json';
+                link.click();
+            } catch(e) {
+                console.error(e);
+            }
+            setTimeout(() => document.body.removeChild(link), 100);
         }
     },
     watch: {
