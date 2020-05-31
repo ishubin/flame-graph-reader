@@ -117,6 +117,16 @@ const Mark = {
             return 21;
         }
         return 352;
+    },
+
+    symbolFor(mark) {
+        if (mark === Mark.Good) {
+            return '\uD83D\uDC4D';
+        }
+        if (mark === Mark.Suspicious) {
+            return '\u26A0';
+        }
+        return '\uD83D\uDC4E';
     }
 };
 
@@ -212,6 +222,8 @@ export default {
         },
 
         drawFrameRect(ctx, rect, width, height, frameHeight) {
+            const frame = this.frameData.findFrameById(rect.id);
+
             let y = Math.floor(rect.d * frameHeight);
             if (this.settings.inverted) {
                 y = Math.floor(height - (rect.d + 1) * frameHeight);
@@ -235,20 +247,23 @@ export default {
             ctx.fillStyle = this.colorForRect(rect);
             ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
 
-            // ctx.strokeStyle = this.backgroundColor;
-            // if (x2 - x > 2) {
-            //     ctx.strokeRect(x, y, Math.max(1, x2-x), frameHeight);
-            // }
-
             if (!this.settings.compact) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 1.0)';
                 let w = x2 - x;
                 let name = rect.name;
-                let padding = 4;
+                let padding = 2;
+
+                let pixelOffset = 0;
+                if (frame.mark) {
+                    if (w > 15) {
+                        ctx.fillText(Mark.symbolFor(rect.mark), x + w - 15, y + 12, 20);
+                        pixelOffset = 15;
+                    }
+                }
 
                 let realTextWidth = ctx.measureText(name).width;
-                if (realTextWidth > w - 2 * padding) {
-                    let numberOfCharacters = Math.floor(name.length * (w+2*padding) / realTextWidth);
+                if (realTextWidth > w - 2 * padding - pixelOffset) {
+                    let numberOfCharacters = Math.floor(name.length * (w + 2*padding - pixelOffset) / realTextWidth);
                     numberOfCharacters -= 3; // compensating for ellipsis
                     if (numberOfCharacters > 0) {
 
