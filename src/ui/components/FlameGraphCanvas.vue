@@ -550,8 +550,7 @@ export default {
                     }
                     this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     
-
-                    this.hoveredAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(frame);
+                    this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
                     this.hoveredAnnotationMaxSamples = frame.samples;
                     this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
                 }
@@ -584,10 +583,9 @@ export default {
          * This function walks through all frames and annotates them based on matching annotation regex terms
          */
         annotateFrames() {
-            this.frameData.traverseFrames((frame, parentFrame) => {
+            const annotateFrame = (frame, parentFrame) => {
                 // stores annotation samples per frame
                 frame.annotationSamples = {};
-
                 let annotatedIndex = -1;
                 for (let i = 0; i < this.annotations.length; i++) {
                     const annotation = this.annotations[i];
@@ -631,8 +629,34 @@ export default {
                     // resetting mark as it was probably cleared by user
                     rect.mark = null;
                 }
-            });
 
+                // contains the sums of all child annotation samples
+                // needed so that we can update current frame in case it didn't match itself on some annotations
+                const childAnnotationSamplesSums = {};
+
+                frame.childFrames.forEach(childFrame => {
+                    const childAnnotationSamples = annotateFrame(childFrame, frame);
+                    for (let annotationName in childAnnotationSamples) {
+                        if (childAnnotationSamples.hasOwnProperty(annotationName)) {
+                            if (!childAnnotationSamplesSums.hasOwnProperty(annotationName)) {
+                                childAnnotationSamplesSums[annotationName] = childAnnotationSamples[annotationName];
+                            } else {
+                                childAnnotationSamplesSums[annotationName] += childAnnotationSamples[annotationName];
+                            }
+                        }
+                    }
+                });
+
+                for (let annotationName in childAnnotationSamplesSums) {
+                    if (childAnnotationSamplesSums.hasOwnProperty(annotationName) && !frame.annotationSamples[annotationName]) {
+                        frame.annotationSamples[annotationName] = childAnnotationSamplesSums[annotationName];
+                    }
+                }
+
+                return frame.annotationSamples;
+            };
+
+            annotateFrame(this.frameData.rootFrame);
             this.toggleAnnotationSamples();
         },
 
@@ -642,53 +666,8 @@ export default {
                 relativeFrame = this.frameData.findFrameById(this.zoomedInRect.id);
             }
             this.annotationMaxSamples = relativeFrame.samples;
-            this.annotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(relativeFrame);
+            this.annotationSamples = relativeFrame.annotationSamples;
             this.quickSearchSamples = this.annotationSamples[QUICK_SEARCH];
-        },
-
-        calculateMaxAnotationSamplesRelativeToFrame(frame) {
-            const maxAnnotationSamples = {};
-            const childAnnotationSamplesSummary = {};
-
-            maxAnnotationSamples[QUICK_SEARCH] = 0;
-            childAnnotationSamplesSummary[QUICK_SEARCH] = 0;
-
-            for (let i = 0; i < this.annotations.length; i++) {
-                childAnnotationSamplesSummary[this.annotations[i].name] = 0;
-                maxAnnotationSamples[this.annotations[i].name] = 0;
-            }
-
-            frame.childFrames.forEach(childFrame => {
-                const childMaxAnnotationSamples = this.calculateMaxAnotationSamplesRelativeToFrame(childFrame);
-                for (let i = 0; i < this.annotations.length; i++) {
-                    if (this.annotations[i].enabled) {
-                        childAnnotationSamplesSummary[this.annotations[i].name] += childMaxAnnotationSamples[this.annotations[i].name];
-                    }
-                }
-                childAnnotationSamplesSummary[QUICK_SEARCH] += childMaxAnnotationSamples[QUICK_SEARCH];
-            });
-
-            for (let i = 0; i < this.annotations.length; i++) {
-                if (this.annotations[i].enabled) {
-                    const selfMatchedSamples = frame.annotationSamples[this.annotations[i].name];
-                    if (selfMatchedSamples === 0) {
-                        maxAnnotationSamples[this.annotations[i].name] = childAnnotationSamplesSummary[this.annotations[i].name];
-                    } else {
-                        maxAnnotationSamples[this.annotations[i].name] = selfMatchedSamples;
-                    }
-                }
-            };
-
-            if (this.searchKeyword) {
-                const selfMatchedSamples = frame.annotationSamples[QUICK_SEARCH];
-                if (selfMatchedSamples === 0) {
-                    maxAnnotationSamples[QUICK_SEARCH] = childAnnotationSamplesSummary[QUICK_SEARCH];
-                } else {
-                    maxAnnotationSamples[QUICK_SEARCH] = selfMatchedSamples;
-                }
-            }
-
-            return maxAnnotationSamples;
         },
 
         repairFrame(frame) {

@@ -21,13 +21,12 @@ h3. Features (TODO)
 - [x] export report to custom format (with annotations)
 - [x] Quick search frame from context menu
 - [x] Copy frame name to clipboard (from context menu)
+- [ ] Improve performance
+    - [ ] Parsing report
+    - [ ] Zooming
+    - [ ] Grid lookup performance (make use of x)
 - [ ] Various color themes
 - [ ] Rename flame graph tab
 - [ ] Improve CSS make it look less ugly
-- [ ] Improve performance
-    - [ ] Parsing report
-    - [ ] Annotating
-    - [ ] Zooming
-    - [ ] Grid lookup perfromance (make use of x)
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
 - [ ] Progress bar
