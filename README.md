@@ -1,4 +1,4 @@
-h3. Features
+h3. Features (TODO)
 - [x] Zoom in/out
 - [x] Loading multiple flame graphs
 - [x] Sorting child flames alphabetically
@@ -15,18 +15,19 @@ h3. Features
 - [x] By frame overview table mode.
     - [x] with diff mode
     - [x] improve search typing
+- [x] Quick search for the same frame
+- [x] Annotation Custom Colors
+- [x] Mark code path as suspicious/good/bad
+- [x] export report to custom format (with annotations)
+- [x] Quick search frame from context menu
+- [x] Copy frame name to clipboard (from context menu)
+- [ ] Various color themes
+- [ ] Rename flame graph tab
+- [ ] Improve CSS make it look less ugly
 - [ ] Improve performance
     - [ ] Parsing report
     - [ ] Annotating
     - [ ] Zooming
     - [ ] Grid lookup perfromance (make use of x)
-- [ ] Repair frames does not work correctly (seeing duplicated frames)
-- [x] Quick search for the same frame
-- [ ] Copy frame name to clipboard (from context menu)
-- [x] Annotation Custom Colors
-- [ ] Progress bar
-- [x] Mark code path as suspicious/good/bad
-- [ ] Various color themes
-- [ ] Rename flame graph tab
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
-- [x] export report to custom format (with annotations)
+- [ ] Progress bar

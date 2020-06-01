@@ -417,6 +417,16 @@ export default {
                     id: 'show-stack-trace',
                     icon: 'fa fa-bars'
                 });
+                this.contextMenu.options.push({
+                    name: 'Search this frame',
+                    id: 'search-this-frame',
+                    icon: 'fa fa-search'
+                });
+                this.contextMenu.options.push({
+                    name: 'Copy Frame to Clipboard',
+                    id: 'copy-frame-name',
+                    icon: 'fa fa-clipboard'
+                });
                 if (rect.parentId === 0) {
                     this.contextMenu.options.push({
                         name: 'Repair Frame',
@@ -473,9 +483,27 @@ export default {
                 this.markFrameAs(this.frameData.findFrameById(this.contextMenu.rect.id), option.mark);
             } else if (option.id === 'clear-mark') {
                 this.clearMarkForFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
-            }
+            } else if (option.id === 'search-this-frame') {
+                this.$emit('quick-search-requested', this.contextMenu.rect.name);
+            } else if (option.id === 'copy-frame-name') {
+                this.copyToClipboard(this.contextMenu.rect.name);
+            } 
 
             this.contextMenu.shown = false;
+        },
+
+        copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            textarea.style.width = '10px';
+            textarea.style.height = '10px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
         },
 
         clearMarkForFrame(frame) {

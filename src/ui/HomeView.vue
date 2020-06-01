@@ -46,6 +46,7 @@
                 :settings="settings"
                 :compared-graph-name="flameGraph.comparedWith"
                 :search-keyword="searchKeywordForFlameGraph"
+                @quick-search-requested="searchKeyword = arguments[0]; toggleQuickSearch()"
                 />
         </div>
 
