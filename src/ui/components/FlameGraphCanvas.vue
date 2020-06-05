@@ -5,6 +5,7 @@
             @dblclick="onCanvasDoubleClick"
             @click="onCanvasClick"
             @mousemove="onCanvasMouseMove"
+            @mouseout="onCanvasMouseOut"
             @contextmenu="onRightClick"
             ></canvas>
 
@@ -565,6 +566,17 @@ export default {
                     const ctx = this.$refs.canvas.getContext('2d');
                     this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                 }
+            }
+        },
+
+        onCanvasMouseOut() {
+            if (this.hoveredFrame.rect) {
+                const previousHoveredRect = this.hoveredFrame.rect;
+                // hovered over void, deselecting rect
+                this.hoveredFrame.rect = null;
+                this.hoveredFrame.frame = null;
+                const ctx = this.$refs.canvas.getContext('2d');
+                this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
             }
         },
 

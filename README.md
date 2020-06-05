@@ -21,7 +21,7 @@ h3. Features (TODO)
 - [x] export report to custom format (with annotations)
 - [x] Quick search frame from context menu
 - [x] Copy frame name to clipboard (from context menu)
-- [ ] Quick search does not show samples correctly in the bottom panel
+- [x] Quick search does not show samples correctly in the bottom panel
 - [ ] License
 - [ ] Fix mouse out (it should reset hovered frame)
 - [ ] Improve performance
