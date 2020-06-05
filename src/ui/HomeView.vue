@@ -374,8 +374,11 @@ something else 4
         },
 
         submitTabRename() {
-            this.flameGraphs[this.toggledTabRename.reportIndex].name = this.toggledTabRename.name;
-            this.toggledTabRename.reportIndex = -1;
+            const idx = this.toggledTabRename.reportIndex;
+            if (idx >= 0) {
+                this.flameGraphs[idx].name = this.toggledTabRename.name;
+                this.toggledTabRename.reportIndex = -1;
+            }
         }
     },
     watch: {
