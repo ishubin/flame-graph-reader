@@ -633,24 +633,29 @@ export default {
                 // contains the sums of all child annotation samples
                 // needed so that we can update current frame in case it didn't match itself on some annotations
                 const childAnnotationSamplesSums = {};
+                childAnnotationSamplesSums[QUICK_SEARCH] = 0;
 
                 frame.childFrames.forEach(childFrame => {
                     const childAnnotationSamples = annotateFrame(childFrame, frame);
-                    for (let annotationName in childAnnotationSamples) {
-                        if (childAnnotationSamples.hasOwnProperty(annotationName)) {
-                            if (!childAnnotationSamplesSums.hasOwnProperty(annotationName)) {
-                                childAnnotationSamplesSums[annotationName] = childAnnotationSamples[annotationName];
-                            } else {
-                                childAnnotationSamplesSums[annotationName] += childAnnotationSamples[annotationName];
-                            }
+                    for (let i = 0; i < this.annotations.length; i++) {
+                        const annotation = this.annotations[i];
+                        if (!childAnnotationSamplesSums.hasOwnProperty(annotation.name)) {
+                            childAnnotationSamplesSums[annotation.name] = childAnnotationSamples[annotation.name];
+                        } else {
+                            childAnnotationSamplesSums[annotation.name] += childAnnotationSamples[annotation.name];
                         }
                     }
+                    childAnnotationSamplesSums[QUICK_SEARCH] += childAnnotationSamples[QUICK_SEARCH];
                 });
 
-                for (let annotationName in childAnnotationSamplesSums) {
-                    if (childAnnotationSamplesSums.hasOwnProperty(annotationName) && !frame.annotationSamples[annotationName]) {
-                        frame.annotationSamples[annotationName] = childAnnotationSamplesSums[annotationName];
+                for (let i = 0; i < this.annotations.length; i++) {
+                    const annotation = this.annotations[i];
+                    if (childAnnotationSamplesSums[annotation.name] && !frame.annotationSamples[annotation.name]) {
+                        frame.annotationSamples[annotation.name] = childAnnotationSamplesSums[annotation.name];
                     }
+                }
+                if (frame.annotationSamples[QUICK_SEARCH] === 0) {
+                    frame.annotationSamples[QUICK_SEARCH] = childAnnotationSamplesSums[QUICK_SEARCH];
                 }
 
                 return frame.annotationSamples;
