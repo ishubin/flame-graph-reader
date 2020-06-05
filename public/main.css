@@ -135,6 +135,11 @@ ul.tabs .tab.active .tab-close {
 ul.tabs .tab:hover .tab-close {
     display: inline-block;
 }
+ul.tabs .tab input[type='text'] {
+    margin-left: 20px;
+    display: inline-block;
+    padding: 2px;
+}
 
 ul.tabs .tab.tab-add-new {
     position: relative;

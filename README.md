@@ -22,13 +22,13 @@ h3. Features (TODO)
 - [x] Quick search frame from context menu
 - [x] Copy frame name to clipboard (from context menu)
 - [x] Quick search does not show samples correctly in the bottom panel
+- [x] Rename flame graph tab
+- [x] Fix mouse out (it should reset hovered frame)
 - [ ] License
-- [ ] Fix mouse out (it should reset hovered frame)
 - [ ] Improve performance
     - [ ] Parsing report
     - [ ] Zooming
     - [ ] Grid lookup performance (make use of x)
 - [ ] Various color themes
-- [ ] Rename flame graph tab
 - [ ] Improve CSS make it look less ugly
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)

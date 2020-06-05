@@ -4,7 +4,8 @@
             <ul class="tabs">
                 <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}"  v-for="(flameGraph, flameGraphIndex) in flameGraphs">
                     <span class="tab-close" @click="closeFlameGraph(flameGraphIndex)">&#x2716;</span>
-                    <span class="tab-name" @click="activeReportIndex = flameGraphIndex">{{flameGraph.name}}</span>
+                    <span class="tab-name" v-if="toggledTabRename.reportIndex !== flameGraphIndex"  @click="activeReportIndex = flameGraphIndex" @dblclick="toggleTabRename(activeReportIndex)">{{flameGraph.name}}</span>
+                    <input type="text" ref="tabRenameField" v-if="toggledTabRename.reportIndex === flameGraphIndex" v-model="toggledTabRename.name" @keydown.enter="submitTabRename()" @blur="submitTabRename">
                 </li>
                 <li class="tab tab-add-new">
                     <div>
@@ -161,7 +162,12 @@ something else 4
             repairBrokenFramesWarningShown: false,
 
             searchKeyword: '',
-            searchKeywordForFlameGraph: ''
+            searchKeywordForFlameGraph: '',
+
+            toggledTabRename: {
+                reportIndex: -1,
+                name: ''
+            }
         };
     },
 
@@ -330,10 +336,6 @@ something else 4
             }
         },
 
-        /*
-flamer, flame-graph-visualizer, flamescope, FlameReader, Flame Graph Reader
-        */
-
         toggleQuickSearch() {
             this.searchKeywordForFlameGraph = this.searchKeyword;
         },
@@ -361,6 +363,19 @@ flamer, flame-graph-visualizer, flamescope, FlameReader, Flame Graph Reader
                 console.error(e);
             }
             setTimeout(() => document.body.removeChild(link), 100);
+        },
+
+        toggleTabRename(reportIndex) {
+            this.toggledTabRename.name = this.flameGraphs[reportIndex].name;
+            this.toggledTabRename.reportIndex = reportIndex;
+            this.$nextTick(() => {
+                this.$refs.tabRenameField[0].focus();
+            });
+        },
+
+        submitTabRename() {
+            this.flameGraphs[this.toggledTabRename.reportIndex].name = this.toggledTabRename.name;
+            this.toggledTabRename.reportIndex = -1;
         }
     },
     watch: {
