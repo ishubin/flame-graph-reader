@@ -42,7 +42,7 @@
                                 <thead>
                                     <tr>
                                         <th v-if="searchKeyword">Quick Search</th>
-                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color)}">
+                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color.h, annotation.color.s, 0.8)}">
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-hovered-annotation-${annotationIndex}`">
                                             <label :for="`chk-hovered-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
@@ -61,7 +61,7 @@
                                 <thead>
                                     <tr>
                                         <th v-if="searchKeyword">Quick Search</th>
-                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color)}">
+                                        <th v-for="(annotation, annotationIndex) in annotations" :style="{background: hslToString(annotation.color.h, annotation.color.s, 0.8)}">
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-annotation-${annotationIndex}`">
                                             <label :for="`chk-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
@@ -577,6 +577,7 @@ export default {
                 this.hoveredFrame.frame = null;
                 const ctx = this.$refs.canvas.getContext('2d');
                 this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+                this.hoveredAnnotationSamples = null;
             }
         },
 
@@ -697,8 +698,8 @@ export default {
             this.render();
         },
 
-        hslToString(c) {
-            return `hsl(${c.h}, ${Math.round(c.s*100)}%, ${Math.round(c.l*100)}%)`;
+        hslToString(h, s, l) {
+            return `hsl(${h}, ${Math.round(s*100)}%, ${Math.round(l*100)}%)`;
         }
     },
     filters: {
