@@ -1,3 +1,9 @@
+Flame Graph Reader
+==================
+
+**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool. It focuses on profiling investigation experience and helps you quickly analyze performance of your apps
+
+
 h3. Features (TODO)
 - [x] Zoom in/out
 - [x] Loading multiple flame graphs
@@ -24,7 +30,14 @@ h3. Features (TODO)
 - [x] Quick search does not show samples correctly in the bottom panel
 - [x] Rename flame graph tab
 - [x] Fix mouse out (it should reset hovered frame)
-- [ ] License
+- [x] License
+- [ ] Flame graph comparison is not working (colors are not used)
 - [ ] Various color themes
 - [ ] Improve CSS make it look less ugly
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
+- [ ] README file
+
+
+License
+---------
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
