@@ -131,6 +131,7 @@ const Mark = {
     }
 };
 
+
 export default {
 
     components: {Modal, ContextMenu},
@@ -175,7 +176,11 @@ export default {
             hoveredAnnotationSamples: null,
             hoveredQuickSearchSamples: 0,
             hoveredAnnotationMaxSamples: 1,
-        }
+
+            // width of a single character in a frame rect
+            // this is used to optimize performance so that we don't call measureText all the time
+            canvasCharacterWidth: 0
+        };
     },
 
     mounted() {
@@ -198,6 +203,7 @@ export default {
 
             this.canvasWidth = width;
             this.canvasHeight = height;
+
 
             // fixing rendering for retina
             if (window.devicePixelRatio === 2) {
@@ -223,6 +229,11 @@ export default {
         },
 
         drawFrameRect(ctx, rect, width, height, frameHeight) {
+            if (this.canvasCharacterWidth === 0) {
+                const text = 'aaaaaaaaaaaaaaaaaaaa';
+                this.canvasCharacterWidth = ctx.measureText(text).width / text.length;
+            }
+
             const frame = this.frameData.findFrameById(rect.id);
 
             let y = Math.floor(rect.d * frameHeight);
@@ -262,7 +273,7 @@ export default {
                     }
                 }
 
-                let realTextWidth = ctx.measureText(name).width;
+                let realTextWidth = Math.round(name.length * this.canvasCharacterWidth);
                 if (realTextWidth > w - 2 * padding - pixelOffset) {
                     let numberOfCharacters = Math.floor(name.length * (w + 2*padding - pixelOffset) / realTextWidth);
                     numberOfCharacters -= 3; // compensating for ellipsis
