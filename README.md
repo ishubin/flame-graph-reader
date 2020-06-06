@@ -31,7 +31,7 @@ h3. Features (TODO)
 - [x] Rename flame graph tab
 - [x] Fix mouse out (it should reset hovered frame)
 - [x] License
-- [ ] Flame graph comparison is not working (colors are not used)
+- [x] Flame graph comparison is not working (colors are not used)
 - [ ] Various color themes
 - [ ] Improve CSS make it look less ugly
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)

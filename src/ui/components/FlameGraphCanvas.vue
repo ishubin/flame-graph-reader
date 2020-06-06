@@ -259,7 +259,7 @@ export default {
                 x2 = width;
             }
 
-            ctx.fillStyle = this.colorForRect(rect);
+            ctx.fillStyle = this.colorForRect(rect, frame);
             ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
 
             if (!this.settings.compact) {
@@ -299,7 +299,12 @@ export default {
             return hue;
         },
 
-        colorForRect(rect) {
+        colorForRect(rect, frame) {
+            let delta = 0;
+            if (frame.diffRatio) {
+                delta = Math.max(-1, Math.min(frame.diffRatio, 1));
+            }
+
             let hue = 0;
             if (rect.quickSearchMatched) {
                 // TODO customize quick search coloring
@@ -308,6 +313,12 @@ export default {
                 hue = this.annotations[rect.annotationIndex].color.h;
             } else if (rect.mark) {
                 hue = Mark.hueFor(rect.mark);
+            } else if (delta !== 0) {
+                if (delta > 0) {
+                    hue = 60 * (1 - delta) + 120 * delta;
+                } else {
+                    hue = 60 * (1 + delta);
+                }
             } else {
                 hue = this.hueForName(rect.name);
             }

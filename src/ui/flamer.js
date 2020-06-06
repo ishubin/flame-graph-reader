@@ -370,19 +370,6 @@ class FrameData {
             frame.otherSelfSamples = 0;
         }
 
-        const rect = this.findRectForFrame(frame);
-        if (rect) {
-            let delta = Math.max(-1, Math.min(frame.diffRatio, 1));
-            let hue = 0;
-            if (delta > 0) {
-                hue = 60 * (1 - delta) + 120 * delta;
-            } else {
-                hue = 60 * (1 + delta);
-            }
-
-            // rect.color = {h: hue, s: 90, l: 50};
-        }
-
         frame.childFrames.forEach((childFrame, childFrameName) => {
             const otherChild = otherFrame ? otherFrame.childFrames.get(childFrameName) : null;
 
