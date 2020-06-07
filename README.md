@@ -32,9 +32,10 @@ h3. Features (TODO)
 - [x] Fix mouse out (it should reset hovered frame)
 - [x] License
 - [x] Flame graph comparison is not working (colors are not used)
-- [ ] Rename frame. This will allow it to be compared correctly
-- [ ] Context menu should disappear if clicked anywhere else
-- [ ] Implemented smart compare for generated Java methods (e.g. stuff like com.sun.proxy.$Proxy90)
+- [x] Rename frame. This will allow it to be compared correctly
+- [x] Context menu should disappear if clicked anywhere else
+- [ ] Regex based search and replace
+- [ ] Implement smart compare for generated Java methods (e.g. stuff like com.sun.proxy.$Proxy90)
 - [ ] Various color themes
 - [ ] Improve CSS make it look less ugly
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
