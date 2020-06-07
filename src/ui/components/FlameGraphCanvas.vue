@@ -94,8 +94,15 @@
             :options="contextMenu.options"
         />
 
-        <modal name="Stacktrace" v-if="shownStackTrace" @close="shownStackTrace = null">
+        <modal title="Stacktrace" v-if="shownStackTrace" @close="shownStackTrace = null">
             <pre><code class="stacktrace">{{shownStackTrace}}</code></pre>
+        </modal>
+
+        <modal title="Rename Frame" v-if="renameFrameModal.shown" primary-button="Rename" 
+            @close="renameFrameModal.shown = false" :width="600" :height="150"
+            @primary-submit="submitRenameFrameModal()"
+            >
+            <input ref="renameFrameTextfield" type="text" class="textfield" v-model="renameFrameModal.name" style="display: block;width: 100%; box-sizing: border-box;" @keydown.enter="submitRenameFrameModal()">
         </modal>
     </div>
 </template>
@@ -168,6 +175,12 @@ export default {
                 options: [],
                 x      : 0,
                 y      : 0
+            },
+
+            renameFrameModal: {
+                shown: false,
+                name: '',
+                frameId: null
             },
 
             // calculated annotated samples relative to zoomed in rect
@@ -462,6 +475,12 @@ export default {
                 }
 
                 this.contextMenu.options.push({
+                    name: 'Rename Frame',
+                    id: 'rename-frame',
+                    icon: 'fa fa-pencil'
+                });
+
+                this.contextMenu.options.push({
                     name: 'Mark as Good',
                     id: 'mark',
                     mark: Mark.Good,
@@ -513,6 +532,14 @@ export default {
                 this.$emit('quick-search-requested', this.contextMenu.rect.name);
             } else if (option.id === 'copy-frame-name') {
                 this.copyToClipboard(this.contextMenu.rect.name);
+            } else if (option.id === 'rename-frame') {
+                this.copyToClipboard(this.contextMenu.rect.name);
+                this.renameFrameModal.name = this.contextMenu.rect.name;
+                this.renameFrameModal.frameId = this.contextMenu.rect.id;
+                this.renameFrameModal.shown = true;
+                this.$nextTick(() => {
+                    this.$refs.renameFrameTextfield.focus();
+                });
             } 
 
             this.contextMenu.shown = false;
@@ -725,6 +752,21 @@ export default {
 
         hslToString(h, s, l) {
             return `hsl(${h}, ${Math.round(s*100)}%, ${Math.round(l*100)}%)`;
+        },
+
+        renameFrame(frameId, newName) {
+            const frame = this.frameData.findFrameById(frameId);
+            frame.name = newName;
+            const ctx = this.$refs.canvas.getContext('2d');
+            this.annotateFrames();
+            const rect = this.frameData.findRectForFrame(frame);
+            rect.name = newName;
+            this.drawFrameRect(ctx, rect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+        },
+
+        submitRenameFrameModal() {
+            this.renameFrame(this.renameFrameModal.frameId, this.renameFrameModal.name);
+            this.renameFrameModal.shown = false;
         }
     },
     filters: {
