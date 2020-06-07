@@ -756,7 +756,15 @@ export default {
 
         renameFrame(frameId, newName) {
             const frame = this.frameData.findFrameById(frameId);
+            const oldName = frame.name;
             frame.name = newName;
+
+            const parentFrame = this.frameData.findFrameById(frame.parentId);
+            if (parentFrame) {
+                parentFrame.childFrames.delete(oldName);
+                parentFrame.childFrames.set(newName, frame);
+            }
+
             const ctx = this.$refs.canvas.getContext('2d');
             this.annotateFrames();
             const rect = this.frameData.findRectForFrame(frame);
