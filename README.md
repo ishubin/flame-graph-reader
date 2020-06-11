@@ -35,9 +35,8 @@ h3. Features (TODO)
 - [x] Rename frame. This will allow it to be compared correctly
 - [x] Context menu should disappear if clicked anywhere else
 - [ ] Regex based search and replace
-- [ ] Implement smart compare for generated Java methods (e.g. stuff like com.sun.proxy.$Proxy90)
-- [ ] Various color themes
 - [ ] Improve CSS make it look less ugly
+- [ ] Various color themes
 - [ ] Import from Chrome developer tools (JSON Trace Event Format)
 - [ ] README file
 

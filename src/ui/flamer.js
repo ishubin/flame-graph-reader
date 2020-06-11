@@ -439,3 +439,31 @@ export function loadFlameGraphFormat(json) {
     enrichFrame(rootFrame);
     return generateFrameData(rootFrame);
 }
+
+
+export function loadJfrJson(events) {
+    if (!Array.isArray(events)) {
+        throw new Error('Expecting array');
+    }
+
+    const rootFrame = {
+        name       : 'all',
+        samples    : 0,
+        childFrames: new Map(),
+        depth      : 0
+    };
+    for (let i = 0; i < events.length; i += 1) {
+        const event = events[i];
+        if (event.eventType === 'jdk.NativeMethodSample' && event.stackTrace && event.stackTrace.frames) {
+            const frames = [];
+            for (let j = event.stackTrace.frames.length - 1; j >=0; j -= 1) {
+                frames.push(event.stackTrace.frames[j].method.class +'.'+ event.stackTrace.frames[j].method.method);
+            }
+            addFramesToFrame(rootFrame, frames, 1);
+        }
+    }
+
+    sortFrames(rootFrame);
+    enrichFrame(rootFrame);
+    return generateFrameData(rootFrame);
+}

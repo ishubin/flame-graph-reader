@@ -115,7 +115,7 @@ java.lang.Thread.run;com.example.App.run 2
 </template>
 
 <script>
-import {parseProfilingLog, generateFrameData, loadFlameGraphFormat} from './flamer';
+import {parseProfilingLog, generateFrameData, loadFlameGraphFormat, loadJfrJson} from './flamer';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
@@ -208,7 +208,7 @@ something else 4
         loadFlameGraph(name, text) {
             const json = this.loadJson(text);
             if (json) {
-                return this.loadJsonReport(json);
+                return this.loadJsonReport(json, name);
             }
 
             // if it's not json, then we try to parse it as a folded log
@@ -224,12 +224,19 @@ something else 4
             };
         },
 
-        loadJsonReport(json) {
+        loadJsonReport(json, name) {
             if (json.type === 'flame-graph-reader') {
                 try {
                     return this.loadFlameGraphReaderFormat(json);
                 } catch(e) {
-                    console.error('Could not lad flame graph from json', e);
+                    console.error('Could not load flame graph from json', e);
+                    throw e;
+                }
+            } else {
+                try {
+                    return this.loadFlameGraphFromJfrJson(json, name);
+                } catch(e) {
+                    console.error('Could not load flame graph from json', e);
                     throw e;
                 }
             }
@@ -245,6 +252,17 @@ something else 4
             this.reportCounter += 1;
             return {
                 name: json.name,
+                id: this.reportCounter,
+                frameData,
+                comparedWith: null
+            };
+        },
+
+        loadFlameGraphFromJfrJson(json, name) {
+            const frameData = loadJfrJson(json);
+            this.reportCounter += 1;
+            return {
+                name,
                 id: this.reportCounter,
                 frameData,
                 comparedWith: null
