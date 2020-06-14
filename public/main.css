@@ -69,9 +69,9 @@ a:hover, span.link:hover {
     border: 1px solid #2b90b5;
 }
 .btn.btn-primary {
-    background: #2c5f7c;
+    background: #1e5474;
     color: #fff;
-    border: 1px solid #3372a6;
+    border: 1px solid #1a3144;
 }
 .btn.btn-primary:hover {
     background: #51b4ec;
@@ -87,6 +87,10 @@ a:hover, span.link:hover {
     background: #eee;
     color: #333;
     border: 1px solid #999;
+}
+
+.btn input[type="checkbox"] {
+    margin: 0;
 }
 
 /****************** Tabs **********************/
@@ -193,12 +197,16 @@ ul.tabs .tab.tab-add-new input[type='file'] {
 
 .header .btn {
     font-size: 10pt;
-    padding: 2px 5px;
+    padding: 5px 10px;
+}
+
+.header .search {
+    width: 300px;
 }
 
 .right-tool-bar {
     position: absolute;
-    right: 0;
+    right: 4px;
     top: 4px;
 }
 

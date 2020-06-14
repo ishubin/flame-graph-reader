@@ -19,7 +19,7 @@
             </ul>
 
             <div class="right-tool-bar">
-                <input type="text" v-model="searchKeyword" class="textfield" placeholder="Search" @keydown.enter="toggleQuickSearch" @blur="toggleQuickSearch"/>
+                <input type="text" v-model="searchKeyword" class="textfield search" placeholder="Search" @keydown.enter="toggleQuickSearch" @blur="toggleQuickSearch"/>
 
                 <span class="btn btn-primary" v-if="mode === 'flame-graph'" @click="mode = 'table-mode'">To Table mode</span>
                 <span class="btn btn-primary" v-else @click="mode = 'flame-graph'">To Flame Graph</span>
