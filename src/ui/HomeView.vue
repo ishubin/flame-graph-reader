@@ -115,7 +115,7 @@ java.lang.Thread.run;com.example.App.run 2
 </template>
 
 <script>
-import {parseProfilingLog, generateFrameData, loadFlameGraphFormat, loadJfrJson} from './flamer';
+import {parseProfilingLog, generateFrameData, loadFlameGraphFormat, loadJfrJson} from './flamegraph';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';

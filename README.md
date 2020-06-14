@@ -1,46 +1,49 @@
 Flame Graph Reader
 ==================
 
-**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool. It focuses on profiling investigation experience and helps you quickly analyze performance of your apps
+**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool. At this moment is has the following features:
+
+- Regex based annotations.
+- Flame graphs comparison
+- Marking frames as good, bad, suspicious
+- Edit frames names
+- Save/load flame graphs
 
 
-h3. Features (TODO)
-- [x] Zoom in/out
-- [x] Loading multiple flame graphs
-- [x] Sorting child flames alphabetically
-- [x] Selecting frames
-- [x] Zoom by mouse (drawing rect on the screen to which it should zoom horizontally)
-- [x] Search
-- [x] Annotate. Use tags that could combine multiple frames (e.g. 'networking', 'mysql', 'cache-lookup' etc.). Allow custom tags + multiple regex search terms per tag
-- [x] Compare two flame graphs (show in tabs + diff view)
-- [x] Invert stack traces
-- [x] Repair stacks (sort of works)
-- [x] Render in compact form
-- [x] Annotations quick on/off checkboxes in bottom panel
-- [x] Save annotations in local storage
-- [x] By frame overview table mode.
-    - [x] with diff mode
-    - [x] improve search typing
-- [x] Quick search for the same frame
-- [x] Annotation Custom Colors
-- [x] Mark code path as suspicious/good/bad
-- [x] export report to custom format (with annotations)
-- [x] Quick search frame from context menu
-- [x] Copy frame name to clipboard (from context menu)
-- [x] Quick search does not show samples correctly in the bottom panel
-- [x] Rename flame graph tab
-- [x] Fix mouse out (it should reset hovered frame)
-- [x] License
-- [x] Flame graph comparison is not working (colors are not used)
-- [x] Rename frame. This will allow it to be compared correctly
-- [x] Context menu should disappear if clicked anywhere else
-- [ ] Regex based search and replace
-- [ ] Improve CSS make it look less ugly
-- [ ] Various color themes
-- [ ] Import from Chrome developer tools (JSON Trace Event Format)
-- [ ] README file
+Supported formats
+------------------
+
+Flame Graph Reader only supports limited formats:
+
+h6. Folded log
+
+The folded log is text based log where each line represents a stacktrace with a number of observed samples. The frames in the stacktrace are delimited with `;` symbol.
+This log can be generated using the scripts from [https://github.com/brendangregg/FlameGraph](https://github.com/brendangregg/FlameGraph) repo
+
+Example:
+```
+com.example.Main.main;com.example.Main.read 2
+com.example.Main.main;com.example.Main.loadFile 1
+```
+
+
+h6. Java Flight Recorder JSON format
+
+There is a way to convert Java Flight Recorder reports to JSON with the help of these tools: [https://github.com/aragozin/jvm-tools](https://github.com/aragozin/jvm-tools)
+Here is how to convert your Java Flight Recorder log to json:
+
+```bash
+java -jar sjk-plus-0.15.jar jfr2json -i recording.jfr -o recording.json
+```
+
+After that you can just load the generated `recording.json` in the Flame Graph Reader
+
+
+h6. Custom Flame Graph Reader format
+
+This is a JSON based format which Flame Graph Reader uses for saving flame graphs, with marks and annotations.
 
 
 License
 ---------
-This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+This Source Code is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.

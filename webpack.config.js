@@ -6,8 +6,8 @@ module.exports = {
     // Where should the compiled file go?
     output: {
         path: path.resolve(__dirname, 'dist'),
-        publicPath: 'dist/flamer-ui.js',
-        filename: 'flamer-ui.js'
+        publicPath: 'dist/flamegraph-ui.js',
+        filename: 'flamegraph-ui.js'
     },
     resolve: {
         alias: {
