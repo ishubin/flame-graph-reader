@@ -1,7 +1,7 @@
 Flame Graph Reader
 ==================
 
-**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool. At this moment is has the following features:
+**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool inspired by the original creator of flame graphs: [Brendan D. Gregg](http://www.brendangregg.com/). At this moment is has the following features:
 
 - Regex based annotations.
 - Comparing flame graphs using diff view 
@@ -29,19 +29,19 @@ com.example.Main.main;com.example.Main.loadFile 1
 
 ##### Java Flight Recorder JSON format
 
-There is a way to convert Java Flight Recorder reports to JSON with the help of these tools: [https://github.com/aragozin/jvm-tools](https://github.com/aragozin/jvm-tools)
-Here is how to convert your Java Flight Recorder log to json:
+There is a way to convert Java Flight Recorder reports to JSON with the help of these tools: [https://github.com/aragozin/jvm-tools](https://github.com/aragozin/jvm-tools).
+Once you obtain the Java Flight Recorder report (e.g. `recording.jfr`) you can convert it to json with the following command
 
 ```bash
 java -jar sjk-plus-0.15.jar jfr2json -i recording.jfr -o recording.json
 ```
 
-After that you can just load the generated `recording.json` in the Flame Graph Reader
+After that you can just load the generated `recording.json` in the Flame Graph Reader.
 
 
 ##### Custom Flame Graph Reader format
 
-This is a JSON based format which Flame Graph Reader uses for saving flame graphs, with marks and annotations.
+This is a JSON based format which Flame Graph Reader uses for saving flame graphs with marks and annotations.
 
 
 License

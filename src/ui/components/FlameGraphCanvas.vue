@@ -246,6 +246,11 @@ export default {
 
         drawFrameRect(ctx, rect, width, height, frameHeight) {
             if (this.canvasCharacterWidth === 0) {
+                // This is a simple trick to optimize the performance of rendering a lot of frames.
+                // The "measureText" function is very expensive so we don't want to run it for each frame.
+                // The trick is to use monospaced font like "Courier new" so that we can easily calculate the width of a single character
+                // This is allows us to only call it once. Next time we need to draw the text on top of a frame
+                // - we will know how much space we would need for it based on the single character width
                 const text = 'aaaaaaaaaaaaaaaaaaaa';
                 this.canvasCharacterWidth = ctx.measureText(text).width / text.length;
             }
@@ -259,8 +264,10 @@ export default {
             if (y < 0 || y > height) {
                 return;
             }
-            let x = Math.floor(width * (rect.x + this.offsetX) * this.zoomX);
-            let x2 = x + Math.floor(rect.w * width * this.zoomX);
+            let x = width * (rect.x + this.offsetX) * this.zoomX;
+            let x2 = Math.round(x + rect.w * width * this.zoomX);
+
+            x = Math.round(x);
 
             if (x2 < 0 || x > width)  {
                 return;
