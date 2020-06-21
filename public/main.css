@@ -1,3 +1,11 @@
+:root {
+    --btn-primary-bg: #1e5474;
+    --btn-primary-color: #fff;
+    --btn-primary-border: #1e5474;
+    --btn-primary-hover-bg: #1a3144;
+    --btn-primary-hover-color: #fff;
+    --btn-primary-hover-border: #4392bf;
+}
 
 html {
     height: 100%;
@@ -69,14 +77,14 @@ a:hover, span.link:hover {
     border: 1px solid #2b90b5;
 }
 .btn.btn-primary {
-    background: #1e5474;
-    color: #fff;
-    border: 1px solid #1a3144;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-border);
 }
 .btn.btn-primary:hover {
-    background: #51b4ec;
-    color: #fff;
-    border: 1px solid #4392bf;
+    background: var(--btn-primary-hover-bg);
+    color: var(--btn-primary-hover-color);
+    border: 1px solid var(--btn-primary-hover-border);
 }
 .btn.btn-secondary {
     background: #ddd;
@@ -447,5 +455,37 @@ textarea.annotation-json {
     border: 1px solid #999;
     width: 15px;
     height: 15px;
+    cursor: pointer;
+}
+
+
+
+/**********************************************/
+.upload-report-button {
+    display: inline-block;
+    padding: 10px 15px;
+    position: relative;
+    overflow: hidden;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-border);
+}
+.upload-report-button:hover {
+    background: var(--btn-primary-hover-bg);
+    color: var(--btn-primary-hover-color);
+    border: 1px solid var(--btn-primary-hover-border);
+}
+
+.upload-report-button span {
+    font-size: 16pt;
+}
+
+.upload-report-button input[type='file'] {
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    width: 400px;
+    height: 400px;
+    opacity: 0;
     cursor: pointer;
 }

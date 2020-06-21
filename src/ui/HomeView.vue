@@ -61,22 +61,29 @@
         <div class="welcome" v-if="flameGraphs.length === 0">
             <h3>Welcome to Flame Graph Visualizer</h3>
             <p>
-                It is an open-source CPU Flame Graph Visualizer. At this moment only folded log is supported. You can generate folded log from perf report using <a href="https://github.com/brendangregg/FlameGraph">these tools</a>
+                It is an open-source CPU Flame Graph Visualizer that focuses on the flame graph reading experience.
+                It makes it easier to analyze performance of your application by providing the following features:
+
+                <ul>
+                    <li><b>Regex based annotations.</b> 
+                    You can group your code using regex and it this way you will be able to see where does your application spend most of the time</li>
+                    <li>
+                        <b>Marking frames.</b>
+                        You might need some more time to look into your IDE and go through the code.
+                        However some code paths might already look suspicious or bad to you. Luckily you can mark them as "good", "bad" or "suspicious" and get back to them later
+                    </li>
+                    <li>
+                        <b>Compare Flame graphs</b>.
+                        This feature is usefull in case your codebase is large and it is hard to see right away the difference in performance.
+                        If you perform profiling before and after the code changes, you can load both reports and compare them
+                    </li>
+                </ul>
             </p>
 
             <div class="upload-report-button">
-                <span>Open Report...</span>
+                <span>Load report</span>
                 <input type="file" @change="onFileChange"/> 
             </div>
-
-            <p>
-                Folded log looks like this:
-            </p>
-<pre><code>
-com.example.Main.main;com.example.Main.loadFile 4
-com.example.Main.main;com.example.Main.read 1
-java.lang.Thread.run;com.example.App.run 2
-</code></pre>
         </div>
 
 
@@ -130,14 +137,6 @@ export default {
     components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
 
     mounted() {
-        this.loadReport('qwe', `
-com.example.Main.main;com.example.Main.test 1
-com.example.Main.main;com.example.Main.test;java.lang.String.format 2
-a;c;b;we;q 3
-a;b;c;v;d;d;af;f;as;s;a;end 6
-c;v;d;d;af;zzzzzzzzzzzz 5
-something else 4
-        `);
     },
 
     beforeDestroy() {
