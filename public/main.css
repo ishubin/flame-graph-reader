@@ -195,6 +195,25 @@ ul.tabs .tab.tab-add-new input[type='file'] {
     background: rgb(212, 212, 212);
 }
 
+.header .help {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
+    font-size: 10pt;
+}
+.header .help a {
+    display: inline-block;
+    padding: 2px 5px;
+    text-decoration: none;
+    color: #555;
+}
+.header .help a:hover {
+    background: #333;
+    color: #fff;
+}
+
+
 .header .btn {
     font-size: 10pt;
     padding: 5px 10px;

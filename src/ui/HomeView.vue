@@ -4,6 +4,10 @@
 <template>
     <div class="main-view">
         <div class="header">
+            <div class="help">
+                <a href="https://github.com/ishubin/flame-graph-reader" target="__blank"><i class="fa fa-github" aria-hidden="true"></i> Project on GitHub</a>
+            </div>
+
             <ul class="tabs">
                 <li class="tab" :class="{'active': flameGraphIndex === activeReportIndex}"  v-for="(flameGraph, flameGraphIndex) in flameGraphs">
                     <span class="tab-close" @click="closeFlameGraph(flameGraphIndex)">&#x2716;</span>

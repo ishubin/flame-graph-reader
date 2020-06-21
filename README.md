@@ -1,7 +1,7 @@
 Flame Graph Reader
 ==================
 
-**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool inspired by the original creator of flame graphs: [Brendan D. Gregg](http://www.brendangregg.com/). At this moment is has the following features:
+**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool inspired by the original creator of flame graphs: [Brendan D. Gregg](http://www.brendangregg.com/). At this moment Flame Graph Reader has the following features:
 
 - Regex based annotations.
 - Comparing flame graphs using diff view 
