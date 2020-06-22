@@ -255,10 +255,54 @@ ul.tabs .tab.tab-add-new input[type='file'] {
     background: #efefef;
 }
 
-
+/********************** Welcome page ************************/
 .welcome {
     padding: 20px;
+    margin: auto;
+    max-width: 900px;
+    font-size: 14pt;
 }
+.welcome h1 {
+    text-align: center;
+}
+.welcome ul {
+    margin: 0;
+    padding: 0;
+}
+.welcome ul li {
+    margin-top: 20px;
+}
+.upload-report-button {
+    display: block;
+    padding: 10px 15px;
+    max-width: 150px;
+    margin: auto;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-border);
+}
+.upload-report-button:hover {
+    background: var(--btn-primary-hover-bg);
+    color: var(--btn-primary-hover-color);
+    border: 1px solid var(--btn-primary-hover-border);
+}
+.upload-report-button span {
+    font-size: 16pt;
+}
+.upload-report-button input[type='file'] {
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
 
 
 pre {
@@ -458,34 +502,3 @@ textarea.annotation-json {
     cursor: pointer;
 }
 
-
-
-/**********************************************/
-.upload-report-button {
-    display: inline-block;
-    padding: 10px 15px;
-    position: relative;
-    overflow: hidden;
-    background: var(--btn-primary-bg);
-    color: var(--btn-primary-color);
-    border: 1px solid var(--btn-primary-border);
-}
-.upload-report-button:hover {
-    background: var(--btn-primary-hover-bg);
-    color: var(--btn-primary-hover-color);
-    border: 1px solid var(--btn-primary-hover-border);
-}
-
-.upload-report-button span {
-    font-size: 16pt;
-}
-
-.upload-report-button input[type='file'] {
-    position: absolute;
-    left: -20px;
-    top: -20px;
-    width: 400px;
-    height: 400px;
-    opacity: 0;
-    cursor: pointer;
-}

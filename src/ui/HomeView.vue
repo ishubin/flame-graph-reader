@@ -59,9 +59,9 @@
         </div>
 
         <div class="welcome" v-if="flameGraphs.length === 0">
-            <h3>Welcome to Flame Graph Visualizer</h3>
+            <h1>Welcome to Flame Graph Reader</h1>
             <p>
-                It is an open-source CPU Flame Graph Visualizer that focuses on the flame graph reading experience.
+                It is an open-source Flame Graph visualizer that focuses on the flame graph reading experience.
                 It makes it easier to analyze performance of your application by providing the following features:
 
                 <ul>
