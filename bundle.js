@@ -19287,7 +19287,7 @@ function route(name, path, component) {
     };
 }
 
-const routes = [route('Home', '/', HomeView)];
+const routes = [route('Home', '/', HomeView), route('Home for github pages', '/flame-graph-reader', HomeView)];
 
 const router = new vue_router_esm({ mode: 'history', routes: routes });
 
