@@ -450,11 +450,21 @@ ul.annotation-regex-terms li {
     float: left;
 }
 ul.annotation-regex-terms .regex-term {
+    position: relative;
     display: inline-block;
     padding: 5px 10px;
     margin-right: 5px;
     background: #fff;
     border-radius: 1px;
+}
+ul.annotation-regex-terms .regex-term .close-link {
+    position: absolute;
+    display: none;
+    top: 2px;
+    left: 2px;
+}
+ul.annotation-regex-terms .regex-term:hover .close-link {
+    display: inline-block;
 }
 textarea.annotation-json {
     margin: 0;

@@ -27,8 +27,11 @@
                         </td>
                         <td>
                             <ul class="annotation-regex-terms">
-                                <li v-for="regex in annotation.regexTerms">
-                                    <div class="regex-term">{{regex}}</div>
+                                <li v-for="(regex, regexIndex) in annotation.regexTerms">
+                                    <div class="regex-term">
+                                        <span class="close-link" @click="removeRegexTerm(annotationIndex, regexIndex)">&#x2716;</span>
+                                        {{regex}}
+                                    </div>
                                 </li>
                             </ul>
                         </td>
@@ -95,6 +98,10 @@ export default {
                 this.newAnnotation.name = '';   
                 this.newAnnotation.regex = '';   
             }
+        },
+
+        removeRegexTerm(annotationIndex, regexIndex) {
+            this.annotations[annotationIndex].regexTerms.splice(regexIndex, 1);
         },
 
         findAnnotationIndexByName(name) {
