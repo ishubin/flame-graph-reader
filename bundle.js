@@ -18158,10 +18158,32 @@ var AnnotationEditorvue_type_template_id_d22c78da_render = function() {
                       _c(
                         "ul",
                         { staticClass: "annotation-regex-terms" },
-                        _vm._l(annotation.regexTerms, function(regex) {
+                        _vm._l(annotation.regexTerms, function(
+                          regex,
+                          regexIndex
+                        ) {
                           return _c("li", [
                             _c("div", { staticClass: "regex-term" }, [
-                              _vm._v(_vm._s(regex))
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "close-link",
+                                  on: {
+                                    click: function($event) {
+                                      return _vm.removeRegexTerm(
+                                        annotationIndex,
+                                        regexIndex
+                                      )
+                                    }
+                                  }
+                                },
+                                [_vm._v("✖")]
+                              ),
+                              _vm._v(
+                                "\n                                    " +
+                                  _vm._s(regex) +
+                                  "\n                                "
+                              )
                             ])
                           ])
                         }),
@@ -18307,6 +18329,9 @@ var vue_color_min_default = /*#__PURE__*/__webpack_require__.n(vue_color_min);
 //
 //
 //
+//
+//
+//
 
 
 
@@ -18351,6 +18376,10 @@ var vue_color_min_default = /*#__PURE__*/__webpack_require__.n(vue_color_min);
                 this.newAnnotation.name = '';
                 this.newAnnotation.regex = '';
             }
+        },
+
+        removeRegexTerm(annotationIndex, regexIndex) {
+            this.annotations[annotationIndex].regexTerms.splice(regexIndex, 1);
         },
 
         findAnnotationIndexByName(name) {
