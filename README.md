@@ -1,13 +1,17 @@
 Flame Graph Reader
 ==================
 
-**Flame Graph Reader** - is an interactive, in-browser flame graph visualization tool inspired by the original creator of flame graphs: [Brendan D. Gregg](http://www.brendangregg.com/). At this moment Flame Graph Reader has the following features:
+[Flame Graph Reader](https://ishubin.github.io/flame-graph-reader/) - is an interactive, in-browser flame graph visualization tool inspired by the original creator of flame graphs: [Brendan D. Gregg](http://www.brendangregg.com/). At this moment Flame Graph Reader has the following features:
 
 - Regex based annotations.
 - Comparing flame graphs using diff view 
 - Marking frames as good, bad, suspicious
 - Edit frames names
 - Save/load flame graphs
+
+Online app
+------------------
+Flame Graph Reader is available online here: https://ishubin.github.io/flame-graph-reader/. It is a static website and it does not store anything on the server. There is no upload and all report processing happens on the client side only.
 
 
 Supported formats
