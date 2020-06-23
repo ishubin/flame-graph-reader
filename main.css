@@ -1,0 +1,504 @@
+:root {
+    --btn-primary-bg: #1e5474;
+    --btn-primary-color: #fff;
+    --btn-primary-border: #1e5474;
+    --btn-primary-hover-bg: #1a3144;
+    --btn-primary-hover-color: #fff;
+    --btn-primary-hover-border: #4392bf;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'San Francisco', Roboto, 'Segoe UI', 'Helvetica Neue',sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+
+a, a:visited, span.link {
+    color: rgb(40, 82, 129);
+    text-decoration: underline;
+    font-weight: normal;
+    cursor: pointer;
+}
+a:hover, span.link:hover {
+    text-decoration: none;
+}
+
+
+.close-link {
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+
+.link-small {
+    font-size: 12px;
+}
+.link-italic {
+    font-style: italic;
+}
+
+.hidden {
+    display: none;
+}
+
+/************* Textfield *******************/
+.textfield {
+    display: inline-block;
+    background: #fff;
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid #999;
+}
+.textfield::placeholder {
+    font-style: italic;
+}
+
+
+/************* Buttons ********************/
+.btn {
+    display: inline-block;
+    padding: 5px 10px 5px 10px;
+    cursor: pointer;
+    background: #f0f0f0;
+    border: 1px solid #777;
+    color: #222;
+}
+.btn:hover {
+    background: #80aed7;
+    color: #fff;
+    border: 1px solid #2b90b5;
+}
+.btn.btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-border);
+}
+.btn.btn-primary:hover {
+    background: var(--btn-primary-hover-bg);
+    color: var(--btn-primary-hover-color);
+    border: 1px solid var(--btn-primary-hover-border);
+}
+.btn.btn-secondary {
+    background: #ddd;
+    color: #333;
+    border: 1px solid #999;
+}
+.btn.btn-secondary:hover {
+    background: #eee;
+    color: #333;
+    border: 1px solid #999;
+}
+
+.btn input[type="checkbox"] {
+    margin: 0;
+}
+
+/****************** Tabs **********************/
+
+ul.tabs {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 25px;
+}
+ul.tabs li {
+    display: inline-block;
+}
+ul.tabs .tab {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    font-weight: bold;
+    height: 30px;
+}
+ul.tabs .tab .tab-name {
+    background: rgb(198, 200, 201);
+    cursor: pointer;
+    font-size: 10pt;
+    padding: 5px 20px;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+}
+ul.tabs .tab.active .tab-name {
+    background: rgb(10, 77, 104);
+    color: white;
+}
+ul.tabs .tab .tab-close {
+    display: none;
+    position: absolute;
+    cursor: pointer;
+    font-size: 10pt;
+    left: 3px;
+    top: 3px;
+}
+ul.tabs .tab .tab-close:hover {
+    opacity: 0.7;
+}
+ul.tabs .tab.active .tab-close {
+    color: white;
+}
+ul.tabs .tab:hover .tab-close {
+    display: inline-block;
+}
+ul.tabs .tab input[type='text'] {
+    margin-left: 20px;
+    display: inline-block;
+    padding: 2px;
+}
+
+ul.tabs .tab.tab-add-new {
+    position: relative;
+    margin: 0;
+    width: 40px;
+    height: 30px;
+}
+ul.tabs .tab.tab-add-new > div {
+    position: absolute;
+    display: inline-block;
+    padding-left: 5px;
+    top: 12px;
+    left: 0;
+    font-size: 10pt;
+    width: 20px;
+    height: 26px;
+    overflow: hidden;
+    background: #bbb;
+}
+ul.tabs .tab.tab-add-new > div:hover {
+    background: #999;
+}
+
+ul.tabs .tab.tab-add-new input[type='file'] {
+    display: block;
+    position: absolute;
+    cursor: pointer;
+    width: 100px;
+    height: 100px;
+    left: -10px;
+    top: -10px;
+    z-index: 10;
+    opacity: 0.0;
+}
+
+.header {
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: rgb(212, 212, 212);
+}
+
+.header .help {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
+    font-size: 10pt;
+}
+.header .help a {
+    display: inline-block;
+    padding: 2px 5px;
+    text-decoration: none;
+    color: #555;
+}
+.header .help a:hover {
+    background: #333;
+    color: #fff;
+}
+
+
+.header .btn {
+    font-size: 10pt;
+    padding: 5px 10px;
+}
+
+.header .search {
+    width: 300px;
+}
+
+.right-tool-bar {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+}
+
+.main-view {
+    padding-top: 60px;
+}
+
+.flame-graph-details-panel {
+    position: fixed;
+    font-size: 9pt;
+    display: block;
+    overflow: scroll;
+    padding: 5px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    border-top: 1px solid #999;
+    background: #efefef;
+}
+
+/********************** Welcome page ************************/
+.welcome {
+    padding: 20px;
+    margin: auto;
+    max-width: 900px;
+    font-size: 14pt;
+}
+.welcome h1 {
+    text-align: center;
+}
+.welcome ul {
+    margin: 0;
+    padding: 0;
+}
+.welcome ul li {
+    margin-top: 20px;
+}
+.upload-report-button {
+    display: block;
+    padding: 10px 15px;
+    max-width: 150px;
+    margin: auto;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-border);
+}
+.upload-report-button:hover {
+    background: var(--btn-primary-hover-bg);
+    color: var(--btn-primary-hover-color);
+    border: 1px solid var(--btn-primary-hover-border);
+}
+.upload-report-button span {
+    font-size: 16pt;
+}
+.upload-report-button input[type='file'] {
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+
+
+pre {
+    margin: 0;
+    padding: 0;
+}
+code.stacktrace {
+    display: block;
+    padding: 10px;
+}
+
+
+table.table {
+    border-collapse: collapse;
+}
+table.table thead th {
+    text-align: left;
+    font-weight: bold;
+    background: #ddd;
+    white-space: nowrap;
+}
+table.table tbody td.label {
+    font-weight: bold;
+}
+table.table tbody td, table.table thead th {
+    border: 1px solid #ccc;
+    padding: 2px 5px;
+}
+
+code.oneliner {
+    display: inline-block;
+    background: white;
+    padding: 2px 5px;
+    border-radius: 1px;
+}
+
+
+
+/************ Modal ****************/
+.modal-mask {
+    position: fixed;
+    z-index: 9998;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: table;
+    transition: opacity .3s ease;
+}
+.modal-mask.modal-mask-transparent {
+    background: none;
+}
+.modal-wrapper {
+    display: table-cell;
+    vertical-align: middle;
+}
+.modal-container {
+    margin: 0px auto;
+    padding: 20px 30px;
+    background-color: #efefef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+    transition: all .3s ease;
+}
+.modal-header h3 {
+    margin-top: 0;
+    color: #2f4752;
+}
+.modal-header h6 {
+    font-weight: bold;
+}
+.modal-body {
+    position: relative;
+    margin: 20px 0;
+    overflow: auto;
+}
+.modal-footer {
+    border-top: 1px solid #777;
+    margin-top: 10px;
+    min-height: 40px;
+}
+.modal-controls {
+    padding-top: 20px;
+    text-align: right;
+}
+.modal-default-button {
+    float: right;
+}
+.modal-enter {
+    opacity: 0;
+}
+.modal-leave-active {
+    opacity: 0;
+}
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+}
+
+
+/********************** Context Menu *********************/
+.context-menu {
+    position: fixed;
+    display: inline-block;
+    box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.4);
+}
+.context-menu ul {
+    display: inline-block;
+    background: #fff;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.context-menu ul li {
+    margin: 0;
+    padding: 0;
+    white-space:nowrap;
+}
+.context-menu ul li div {
+    display: block;
+    position: relative;
+    padding: 5px 10px 5px 30px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.context-menu ul li div:hover {
+    background: #afd7ee;
+}
+.context-menu ul li div .icon {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+}
+
+
+
+/*************** Annotations *****************/
+ul.annotation-regex-terms {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+ul.annotation-regex-terms li {
+    float: left;
+}
+ul.annotation-regex-terms .regex-term {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 5px;
+    background: #fff;
+    border-radius: 1px;
+}
+textarea.annotation-json {
+    margin: 0;
+    border: none;
+    width: 99%;
+    height: 400px;
+}
+
+
+
+.frame-table-overview {
+    padding: 10px;
+}
+.frame-table-overview input.search {
+    width: calc(100% - 20px);
+}
+.frame-table-overview table {
+    width: calc(100% - 20px);
+    margin-top: 10px;
+    font-size: 9pt;
+    font-family: 'Courier New', Courier, monospace;
+}
+.frame-table-overview table thead th {
+    cursor: pointer;
+}
+.frame-table-overview table thead th:hover {
+    text-decoration: underline;
+}
+
+
+
+/****************** Flame Graph Canvas *********************/
+.flame-graph-canvas canvas {
+    user-select: none;
+    margin-bottom: 70px;
+}
+
+
+/***************** Color Picker *******************/
+.color-picker-rect {
+    display: inline-block;
+    border: 1px solid #999;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
