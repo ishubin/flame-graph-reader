@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import {parseProfilingLog, generateFrameData, loadFlameGraphFormat, loadJfrJson} from './flamegraph';
+import {parseProfilingLog, parseNodeProfPreprocessedReport, generateFrameData, loadFlameGraphFormat, loadJfrJson} from './flamegraph';
 import FlameGraphCanvas from './components/FlameGraphCanvas.vue';
 import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
@@ -228,22 +228,29 @@ export default {
         },
 
         loadJsonReport(json, name) {
-            if (json.type === 'flame-graph-reader') {
-                try {
+            try {
+                if (json.type === 'flame-graph-reader') {
                     return this.loadFlameGraphReaderFormat(json);
-                } catch(e) {
-                    console.error('Could not load flame graph from json', e);
-                    throw e;
-                }
-            } else {
-                try {
+                } if (this.isNodeProfPreprocessedReport(json)) {
+                    return this.loadNodeProfPreprocessedFormat(json, name);
+                } else {
                     return this.loadFlameGraphFromJfrJson(json, name);
-                } catch(e) {
-                    console.error('Could not load flame graph from json', e);
-                    throw e;
                 }
+            } catch(e) {
+                console.error('Could not load flame graph from json', e);
+                throw e;
             }
-            throw new Error('Unrecognized format');
+        },
+
+        loadNodeProfPreprocessedFormat(json, name) {
+            const frameData = parseNodeProfPreprocessedReport(json);
+            this.reportCounter += 1;
+            return {
+                name,
+                id: this.reportCounter,
+                frameData,
+                comparedWith: null
+            };
         },
 
         loadFlameGraphReaderFormat(json) {
@@ -280,6 +287,16 @@ export default {
             }
         },
 
+        isNodeProfPreprocessedReport(json) {
+            const keys = ['code', 'functions', 'ticks', 'scripts'];
+            for (let i = 0; i < keys.length; i++) {
+                if (!json.hasOwnProperty(keys[i])) {
+                    return false;
+                }
+            }
+            return true;
+        },
+        
         closeFlameGraph(index) {
             if (index < this.flameGraphs.length) {
                 if (index <= this.activeReportIndex) {

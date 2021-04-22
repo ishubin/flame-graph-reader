@@ -468,3 +468,35 @@ export function loadJfrJson(events) {
     enrichFrame(rootFrame);
     return generateFrameData(rootFrame);
 }
+
+
+export function parseNodeProfPreprocessedReport(json) {
+    const rootFrame = {
+        name       : 'all',
+        samples    : 0,
+        childFrames: new Map(),
+        depth      : 0
+    };
+
+    const codeToFrameName = (codeIdx) => {
+        const code = json.code[codeIdx];
+        if (!code) {
+            return 'unknown';
+        }
+
+        return code.type + ' ' + code.name;
+    };
+
+    for (let i = 0; i < json.ticks.length; i += 1) {
+        const tick = json.ticks[i];
+        const frames = [];
+        for (let j = tick.s.length - 1; j >=0; j -= 1) {
+            frames.push(codeToFrameName(tick.s[j]));
+        }
+        addFramesToFrame(rootFrame, frames, 1);
+    }
+
+    sortFrames(rootFrame);
+    enrichFrame(rootFrame);
+    return generateFrameData(rootFrame);
+}
