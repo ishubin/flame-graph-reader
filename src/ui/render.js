@@ -3,7 +3,7 @@
 // this is used to optimize performance so that we don't call measureText all the time
 let _canvasCharacterWidth = 0;
 
-export function render(frameHeight, canvas, frameData, settings, backgroundColor, offsetX, zoomX, hoveredFrame, annotations) {
+export function render(frameHeight, canvas, frameData, settings, backgroundColor, offsetX, zoomX, hoveredFrameRectId, annotations) {
     const ctx = canvas.getContext('2d');
 
     const width = window.innerWidth;
@@ -28,7 +28,9 @@ export function render(frameHeight, canvas, frameData, settings, backgroundColor
 
 
     for (let i = 0; i < frameData.rects.length; i++) {
-        drawFrameRect(ctx, frameData, frameData.rects[i], width, height, frameHeight, settings, offsetX, zoomX, hoveredFrame, annotations);
+        const isHovered = frameData.rects[i].id === hoveredFrameRectId;
+
+        drawFrameRect(ctx, frameData, frameData.rects[i], width, height, frameHeight, settings, offsetX, zoomX, isHovered, annotations);
     }
 
     return {
@@ -37,7 +39,7 @@ export function render(frameHeight, canvas, frameData, settings, backgroundColor
     };
 }
 
-export function drawFrameRect(ctx, frameData, rect, width, height, frameHeight, settings, offsetX, zoomX, hoveredFrame, annotations) {
+export function drawFrameRect(ctx, frameData, rect, width, height, frameHeight, settings, offsetX, zoomX, isHovered, annotations) {
     if (_canvasCharacterWidth === 0) {
         // This is a simple trick to optimize the performance of rendering a lot of frames.
         // The "measureText" function is very expensive so we don't want to run it for each frame.
@@ -72,7 +74,7 @@ export function drawFrameRect(ctx, frameData, rect, width, height, frameHeight, 
         x2 = width;
     }
 
-    ctx.fillStyle = colorForRect(rect, frame, hoveredFrame, annotations);
+    ctx.fillStyle = colorForRect(rect, frame, isHovered, annotations);
     ctx.fillRect(x, y, Math.max(1, x2-x), frameHeight);
 
     if (!settings.compact) {
@@ -112,7 +114,7 @@ function hueForName(name) {
     return hue;
 }
 
-function colorForRect(rect, frame, hoveredFrame, annotations) {
+function colorForRect(rect, frame, isHovered, annotations) {
     let delta = 0;
     if (frame.diffRatio) {
         delta = Math.max(-1, Math.min(frame.diffRatio, 1));
@@ -137,7 +139,8 @@ function colorForRect(rect, frame, hoveredFrame, annotations) {
     }
 
     const saturation = rect.dimmed ? 30 : 93;
-    const light = (hoveredFrame.rect && hoveredFrame.rect.id === rect.id) ? 85 : 71;
+    const light = isHovered ? 85 : 71;
+    // const light = () ? 85 : 71;
 
     return `hsl(${hue}, ${saturation}%, ${light}%)`;
 }

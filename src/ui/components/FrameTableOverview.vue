@@ -44,8 +44,13 @@
 
 const TABLE_OVERVIEW_SYMBOL = Symbol('_tableOverview');
 
+
+function findFrameData(frameDataRef) {
+    return window.frameDatas.get(frameDataRef);
+}
+
 export default {
-    props: ['frameData', 'comparedGraphName', 'comparedGraphMaxSamples'],
+    props: ['frameDataRef', 'comparedGraphName', 'comparedGraphMaxSamples'],
 
     beforeMount() {
         this.loadTable();
@@ -65,8 +70,10 @@ export default {
 
     methods: {
         loadTable() {
-            if (this.frameData[TABLE_OVERVIEW_SYMBOL]) {
-                this.rows = this.frameData[TABLE_OVERVIEW_SYMBOL];
+            const frameData = findFrameData(this.frameDataRef);
+
+            if (frameData[TABLE_OVERVIEW_SYMBOL]) {
+                this.rows = frameData[TABLE_OVERVIEW_SYMBOL];
                 return;
             }
 
@@ -82,10 +89,10 @@ export default {
                     return true;
                 }
 
-                return hasSameFrameInAncestors(name, this.frameData.findParentFrameForFrame(parentFrame));
+                return hasSameFrameInAncestors(name, frameData.findParentFrameForFrame(parentFrame));
             };
 
-            this.frameData.traverseFrames((frame, parentFrame) => {
+            frameData.traverseFrames((frame, parentFrame) => {
                 if (!hasSameFrameInAncestors(frame.name, parentFrame)) {
                     if (!nameMap.has(frame.name)) {
                         nameMap.set(frame.name, {
@@ -110,8 +117,8 @@ export default {
                         name          : name,
                         samples       : value.samples,
                         selfSamples   : value.selfSamples,
-                        ratio         : value.samples / this.frameData.rootFrame.samples,
-                        selfRatio     : value.selfSamples / this.frameData.rootFrame.samples,
+                        ratio         : value.samples / frameData.rootFrame.samples,
+                        selfRatio     : value.selfSamples / frameData.rootFrame.samples,
                         otherRatio    : this.comparedGraphMaxSamples ? value.otherSamples / this.comparedGraphMaxSamples    : 0,
                         otherSelfRatio: this.comparedGraphMaxSamples ? value.otherSelfSamples / this.comparedGraphMaxSamples: 0
                     });
@@ -119,7 +126,7 @@ export default {
             });
             this.sortTable();
             this.filterRows();
-            this.frameData[TABLE_OVERVIEW_SYMBOL] = this.rows;
+            frameData[TABLE_OVERVIEW_SYMBOL] = this.rows;
         },
 
         sortTable() {

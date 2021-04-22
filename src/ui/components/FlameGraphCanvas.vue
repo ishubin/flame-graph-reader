@@ -142,16 +142,26 @@ const Mark = {
     }
 };
 
+function findFrameData(frameDataRef) {
+    return window.frameDatas.get(frameDataRef);
+}
+
+// temporary hack
+function cloneObj(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 export default {
 
     components: {Modal, ContextMenu},
 
-    props: ['frameData', 'annotations', 'settings', 'comparedGraphName', 'searchKeyword'],
+    props: ['frameDataRef', 'annotations', 'settings', 'comparedGraphName', 'searchKeyword'],
 
     data() {
+        const frameData = findFrameData(this.frameDataRef);
+
         return {
-            grid              : createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth + 1),
+            grid              : createGridFromRects(frameData.rects, frameData.rootFrame.maxDepth + 1),
             normalFrameHeight : 16,
             compactFrameHeight: 5,
             offsetX           : 0.0,
@@ -207,19 +217,25 @@ export default {
         },
 
         render() {
-            const result = render(this.getFrameHeight(), this.$refs.canvas, this.frameData, this.settings, this.backgroundColor, this.offsetX, this.zoomX, this.hoveredFrame, this.annotations);
+            const frameData = findFrameData(this.frameDataRef);
+            let hoveredFrameRectId = null;
+            if (this.hoveredFrame && this.hoveredFrame.rect) {
+                hoveredFrameRectId = this.hoveredFrame.rect.id;
+            }
+            const result = render(this.getFrameHeight(), this.$refs.canvas, frameData, this.settings, this.backgroundColor, this.offsetX, this.zoomX, hoveredFrameRectId, this.annotations);
             
             this.canvasWidth = result.width;
             this.canvasHeight = result.height;
         },
 
         zoomOut() {
+            const frameData = findFrameData(this.frameDataRef);
             this.zoomX = 1.0;
             this.offsetX = 0.0;
 
             if (this.zoomedInRect) {
                 // reseting previous zoom
-                this.frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
+                frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
                     ancestorRect.dimmed = false;
                 });
             }
@@ -243,13 +259,14 @@ export default {
         },
 
         zoomIntoRect(rect) {
+            const frameData = findFrameData(this.frameDataRef);
             if (this.zoomedInRect) {
                 // reseting previous zoom
-                this.frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
+                frameData.traverseRectAncestors(this.zoomedInRect, ancestorRect => {
                     ancestorRect.dimmed = false;
                 });
             }
-            this.frameData.traverseRectAncestors(rect, ancestorRect => {
+            frameData.traverseRectAncestors(rect, ancestorRect => {
                 ancestorRect.dimmed = true;
             });
 
@@ -299,6 +316,8 @@ export default {
         },
 
         showContextMenuForRect(rect, mx, my) {
+            const frameData = findFrameData(this.frameDataRef);
+
             this.contextMenu.rect = rect;
             this.contextMenu.x = mx;
             this.contextMenu.y = my;
@@ -370,7 +389,7 @@ export default {
                     icon: 'fa fa-thumbs-down'
                 });
 
-                const frame = this.frameData.findFrameById(rect.id);
+                const frame = frameData.findFrameById(rect.id);
                 if (frame.mark) {
                     this.contextMenu.options.push({
                         name: 'Clear Mark',
@@ -383,6 +402,8 @@ export default {
         },
 
         onContextMenuOptionSelected(option) {
+            const frameData = findFrameData(this.frameDataRef);
+
             if (option.id === 'zoom-out') {
                 this.zoomOut();
             } else if (option.id === 'zoom') {
@@ -390,15 +411,15 @@ export default {
             } else if (option.id === 'zoom-into-frame') {
                 this.zoomIntoRect(this.contextMenu.rect);
             } else if (option.id === 'show-stack-trace' && this.contextMenu.rect) {
-                this.shownStackTrace = this.frameData.collectStackTrace(this.contextMenu.rect.id);
+                this.shownStackTrace = frameData.collectStackTrace(this.contextMenu.rect.id);
             } else if (option.id === 'repair-frame') {
-                this.repairFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
+                this.repairFrame(frameData.findFrameById(this.contextMenu.rect.id));
             } else if (option.id === 'download') {
                 this.downloadCanvasAsImage();
             } else if (option.id === 'mark') {
-                this.markFrameAs(this.frameData.findFrameById(this.contextMenu.rect.id), option.mark);
+                this.markFrameAs(frameData.findFrameById(this.contextMenu.rect.id), option.mark);
             } else if (option.id === 'clear-mark') {
-                this.clearMarkForFrame(this.frameData.findFrameById(this.contextMenu.rect.id));
+                this.clearMarkForFrame(frameData.findFrameById(this.contextMenu.rect.id));
             } else if (option.id === 'search-this-frame') {
                 this.$emit('quick-search-requested', this.contextMenu.rect.name);
             } else if (option.id === 'copy-frame-name') {
@@ -458,23 +479,31 @@ export default {
         },
 
         onCanvasMouseMove(event) {
+            const frameData = findFrameData(this.frameDataRef);
+
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
             const foundRect = this.findRectAtPoint(x, y);
 
             if (foundRect) {
                 const previousHoveredRect = this.hoveredFrame.rect;
-                this.hoveredFrame.rect = foundRect;
-                const frame = this.frameData.findFrameById(foundRect.id);
-                this.hoveredFrame.frame = frame;
+                this.hoveredFrame.rect = cloneObj(foundRect);
+                const frame = frameData.findFrameById(foundRect.id);
+                this.hoveredFrame.frame = cloneObj({
+                    annotationSamples: frame.annotationSamples,
+                    otherRatio: frame.otherRatio
+                });
                 if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
-                    const ctx = this.$refs.canvas.getContext('2d');
-                    if (previousHoveredRect) {
-                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
-                    }
-                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+                    // temporarily disabled the following code as it sucks performance wise on large flame graphs
+
+
+                    // const ctx = this.$refs.canvas.getContext('2d');
+                    // if (previousHoveredRect) {
+                    //     this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+                    // }
+                    // this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     
-                    this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
+                    this.hoveredAnnotationSamples = cloneObj(this.hoveredFrame.frame.annotationSamples);
                     this.hoveredAnnotationMaxSamples = frame.samples;
                     this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
                 }
@@ -493,7 +522,9 @@ export default {
         },
 
         drawFrameRect(ctx, rect, width, height, frameHeight) {
-            drawFrameRect(ctx, this.frameData, rect, width, height, frameHeight, this.settings, this.offsetX, this.zoomX, this.hoveredFrame, this.annotations);
+            let isHovered = (this.hoveredFrame && this.hoveredFrame.rect && this.hoveredFrame.rect.id === rect.id);
+
+            drawFrameRect(ctx, findFrameData(this.frameDataRef), rect, width, height, frameHeight, this.settings, this.offsetX, this.zoomX, isHovered, this.annotations);
         },
 
         onCanvasMouseOut() {
@@ -509,7 +540,8 @@ export default {
         },
 
         showStackTraceForRect(rect) {
-            this.shownStackTrace = this.frameData.collectStackTrace(rect.id);
+            const frameData = findFrameData(this.frameDataRef);
+            this.shownStackTrace = frameData.collectStackTrace(rect.id);
         },
 
         fromCanvasCoords(mx, my) {
@@ -523,6 +555,8 @@ export default {
          * This function walks through all frames and annotates them based on matching annotation regex terms
          */
         annotateFrames() {
+            const frameData = findFrameData(this.frameDataRef);
+
             const annotateFrame = (frame, parentFrame) => {
                 // stores annotation samples per frame
                 frame.annotationSamples = {};
@@ -555,8 +589,8 @@ export default {
                     frame.annotationSamples[QUICK_SEARCH] = 0;
                 }
 
-                const rect = this.frameData.findRectForFrame(frame);
-                const parentRect = this.frameData.findRectForFrame(parentFrame);
+                const rect = frameData.findRectForFrame(frame);
+                const parentRect = frameData.findRectForFrame(parentFrame);
                 rect.annotationIndex = annotatedIndex;
                 rect.quickSearchMatched = quickSearchMatched;
 
@@ -601,14 +635,15 @@ export default {
                 return frame.annotationSamples;
             };
 
-            annotateFrame(this.frameData.rootFrame);
+            annotateFrame(frameData.rootFrame);
             this.toggleAnnotationSamples();
         },
 
         toggleAnnotationSamples() {
-            let relativeFrame = this.frameData.rootFrame;
+            const frameData = findFrameData(this.frameDataRef);
+            let relativeFrame = frameData.rootFrame;
             if (this.zoomedInRect) {
-                relativeFrame = this.frameData.findFrameById(this.zoomedInRect.id);
+                relativeFrame = frameData.findFrameById(this.zoomedInRect.id);
             }
             this.annotationMaxSamples = relativeFrame.samples;
             this.annotationSamples = relativeFrame.annotationSamples;
@@ -616,8 +651,9 @@ export default {
         },
 
         repairFrame(frame) {
-            this.frameData.repairFrame(frame);
-            this.grid = createGridFromRects(this.frameData.rects, this.frameData.rootFrame.maxDepth + 1);
+            const frameData = findFrameData(this.frameDataRef);
+            frameData.repairFrame(frame);
+            this.grid = createGridFromRects(frameData.rects, frameData.rootFrame.maxDepth + 1);
 
             this.hoveredFrame.rect = null;
             this.annotateFrames();
@@ -630,11 +666,12 @@ export default {
         },
 
         renameFrame(frameId, newName) {
-            const frame = this.frameData.findFrameById(frameId);
+            const frameData = findFrameData(this.frameDataRef);
+            const frame = frameData.findFrameById(frameId);
             const oldName = frame.name;
             frame.name = newName;
 
-            const parentFrame = this.frameData.findFrameById(frame.parentId);
+            const parentFrame = frameData.findFrameById(frame.parentId);
             if (parentFrame) {
                 parentFrame.childFrames.delete(oldName);
                 parentFrame.childFrames.set(newName, frame);
@@ -642,7 +679,7 @@ export default {
 
             const ctx = this.$refs.canvas.getContext('2d');
             this.annotateFrames();
-            const rect = this.frameData.findRectForFrame(frame);
+            const rect = frameData.findRectForFrame(frame);
             rect.name = newName;
             this.drawFrameRect(ctx, rect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
         },

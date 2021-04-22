@@ -40,7 +40,7 @@
             <frame-table-overview v-for="(flameGraph, flameGraphIndex) in flameGraphs"
                 :key="`frame-table-overview-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
-                :frame-data="flameGraph.frameData"
+                :frame-data-ref="flameGraph.frameDataRef"
                 :compared-graph-name="flameGraph.comparedWith"
                 :compared-graph-max-samples="flameGraph.comparedMaxSamples"
                 />
@@ -49,7 +49,7 @@
             <flame-graph-canvas v-for="(flameGraph, flameGraphIndex) in flameGraphs"
                 :key="`flame-graph-canvas-${flameGraph.id}`"
                 :class="{'hidden': flameGraphIndex !== activeReportIndex}"
-                :frame-data="flameGraph.frameData"
+                :frame-data-ref="flameGraph.frameDataRef"
                 :annotations="annotations"
                 :settings="settings"
                 :compared-graph-name="flameGraph.comparedWith"
@@ -132,6 +132,7 @@ import Modal from './components/Modal.vue';
 import AnnotationsEditor from './components/AnnotationEditor.vue';
 import FrameTableOverview from './components/FrameTableOverview.vue';
 
+window.frameDatas = new Map();
 
 export default {
     components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
@@ -202,6 +203,7 @@ export default {
                     this.flameGraphs.push(flameGraph);
                     this.activeReportIndex = this.flameGraphs.length - 1;
                 } catch(e) {
+                    console.error(e);
                     alert('Could not load report. Unrecognized format');
                 }
                 this.isLoadingFlameGraph = false;
@@ -211,7 +213,14 @@ export default {
         loadFlameGraph(name, text) {
             const json = this.loadJson(text);
             if (json) {
-                return this.loadJsonReport(json, name);
+                const report = this.loadJsonReport(json, name);
+                window.frameDatas.set(report.id, report.frameData);
+                return {
+                    name: report.name,
+                    id: report.id,
+                    frameDataRef: report.id,
+                    comparedWith: null
+                };
             }
 
             // if it's not json, then we try to parse it as a folded log
@@ -219,10 +228,13 @@ export default {
             const frameData = generateFrameData(rootFrame);
 
             this.reportCounter += 1;
+
+            window.frameDatas.set(this.reportCounter, frameData);
+
             return {
                 name: name,
                 id: this.reportCounter,
-                frameData,
+                frameDataRef: this.reportCounter,
                 comparedWith: null
             };
         },
@@ -302,6 +314,8 @@ export default {
                 if (index <= this.activeReportIndex) {
                     this.activeReportIndex -= 1;
                 }
+                const id = this.flameGraphs[index].id;
+                window.frameDatas.delete(id);
                 this.flameGraphs.splice(index, 1);
             }
         },
