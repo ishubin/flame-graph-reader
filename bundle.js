@@ -16313,6 +16313,50 @@ function loadJfrJson(events) {
     enrichFrame(rootFrame);
     return generateFrameData(rootFrame);
 }
+
+function parseNodeProfPreprocessedReport(json) {
+    const rootFrame = {
+        name: 'all',
+        samples: 0,
+        childFrames: new Map(),
+        depth: 0
+    };
+
+    const codeToFrameName = codeIdx => {
+        const code = json.code[codeIdx];
+        if (!code) {
+            return 'unknown';
+        }
+
+        // ignoring CODE types as we are mostly interested in JS part and it makes it difficult to read flame graphs with it
+        if (code.type === 'CODE') {
+            return null;
+        }
+        if (code.type === 'SHARED_LIB') {
+            return '(lib) ' + code.name;
+        }
+        if (code.type === 'JS') {
+            return code.name;
+        }
+        return code.type + ' ' + code.name;
+    };
+
+    for (let i = 0; i < json.ticks.length; i += 1) {
+        const tick = json.ticks[i];
+        const frames = [];
+        for (let j = tick.s.length - 1; j >= 0; j -= 1) {
+            const name = codeToFrameName(tick.s[j]);
+            if (name) {
+                frames.push(name);
+            }
+        }
+        addFramesToFrame(rootFrame, frames, 1);
+    }
+
+    sortFrames(rootFrame);
+    enrichFrame(rootFrame);
+    return generateFrameData(rootFrame);
+}
 // CONCATENATED MODULE: ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./src/ui/components/FlameGraphCanvas.vue?vue&type=template&id=d8a97cac&
 var FlameGraphCanvasvue_type_template_id_d8a97cac_render = function() {
   var _vm = this
@@ -16496,7 +16540,30 @@ var FlameGraphCanvasvue_type_template_id_d8a97cac_render = function() {
                                   )
                                 ]
                               )
-                            })
+                            }),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedBadSamples > 0
+                              ? _c("th", { staticClass: "marked-bad" }, [
+                                  _c("i", { staticClass: "fa fa-thumbs-down" }),
+                                  _vm._v(" Bad")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedSuspiciousSamples > 0
+                              ? _c("th", { staticClass: "marked-suspicious" }, [
+                                  _c("i", {
+                                    staticClass: "fa fa-question-circle"
+                                  }),
+                                  _vm._v(" Suspicious")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedGoodSamples > 0
+                              ? _c("th", { staticClass: "marked-good" }, [
+                                  _c("i", { staticClass: "fa fa-thumbs-up" }),
+                                  _vm._v(" Good")
+                                ])
+                              : _vm._e()
                           ],
                           2
                         )
@@ -16536,7 +16603,46 @@ var FlameGraphCanvasvue_type_template_id_d8a97cac_render = function() {
                                     ])
                                   : _vm._e()
                               ])
-                            })
+                            }),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedBadSamples > 0
+                              ? _c("td", { staticClass: "marked-bad" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.hoveredMarkedBadSamples,
+                                        _vm.hoveredAnnotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedSuspiciousSamples > 0
+                              ? _c("td", { staticClass: "marked-suspicious" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.hoveredMarkedSuspiciousSamples,
+                                        _vm.hoveredAnnotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.hoveredMarkedGoodSamples > 0
+                              ? _c("td", { staticClass: "marked-good" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.hoveredMarkedGoodSamples,
+                                        _vm.hoveredAnnotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e()
                           ],
                           2
                         )
@@ -16628,7 +16734,30 @@ var FlameGraphCanvasvue_type_template_id_d8a97cac_render = function() {
                                   )
                                 ]
                               )
-                            })
+                            }),
+                            _vm._v(" "),
+                            _vm.markedBadSamples > 0
+                              ? _c("th", { staticClass: "marked-bad" }, [
+                                  _c("i", { staticClass: "fa fa-thumbs-down" }),
+                                  _vm._v(" Bad")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.markedSuspiciousSamples > 0
+                              ? _c("th", { staticClass: "marked-suspicious" }, [
+                                  _c("i", {
+                                    staticClass: "fa fa-question-circle"
+                                  }),
+                                  _vm._v(" Suspicious")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.markedGoodSamples > 0
+                              ? _c("th", { staticClass: "marked-good" }, [
+                                  _c("i", { staticClass: "fa fa-thumbs-up" }),
+                                  _vm._v(" Good")
+                                ])
+                              : _vm._e()
                           ],
                           2
                         )
@@ -16668,7 +16797,46 @@ var FlameGraphCanvasvue_type_template_id_d8a97cac_render = function() {
                                     ])
                                   : _vm._e()
                               ])
-                            })
+                            }),
+                            _vm._v(" "),
+                            _vm.markedBadSamples > 0
+                              ? _c("td", { staticClass: "marked-bad" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.markedBadSamples,
+                                        _vm.annotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.markedSuspiciousSamples > 0
+                              ? _c("td", { staticClass: "marked-suspicious" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.markedSuspiciousSamples,
+                                        _vm.annotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.markedGoodSamples > 0
+                              ? _c("td", { staticClass: "marked-good" }, [
+                                  _vm._v(
+                                    _vm._s(
+                                      _vm._f("samplesToPercent")(
+                                        _vm.markedGoodSamples,
+                                        _vm.annotationMaxSamples
+                                      )
+                                    )
+                                  )
+                                ])
+                              : _vm._e()
                           ],
                           2
                         )
@@ -17243,17 +17411,34 @@ function createGridFromRects(rects, maxY) {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
 
 
 const QUICK_SEARCH = Symbol('Quick Search');
+const MARK_GOOD = Symbol('Mark good');
+const MARK_SUCPICIOUS = Symbol('Mark suspicious');
+const MARK_BAD = Symbol('Mark bad');
 
 const Mark = {
     Good: 'good',
     Suspicious: 'suspicious',
     Bad: 'bad',
+
+    _symbols: {},
 
     hueFor(mark) {
         if (mark === Mark.Good) {
@@ -17275,6 +17460,10 @@ const Mark = {
         return '\uD83D\uDC4E';
     }
 };
+
+Mark._symbols[Mark.Good] = MARK_GOOD;
+Mark._symbols[Mark.Suspicious] = MARK_SUCPICIOUS;
+Mark._symbols[Mark.Bad] = MARK_BAD;
 
 /* harmony default export */ var FlameGraphCanvasvue_type_script_lang_js_ = ({
 
@@ -17320,11 +17509,17 @@ const Mark = {
             // calculated annotated samples relative to zoomed in rect
             annotationSamples: {},
             quickSearchSamples: 0,
+            markedGoodSamples: 0,
+            markedSuspiciousSamples: 0,
+            markedBadSamples: 0,
             annotationMaxSamples: 1,
 
             // calculated annotated samples relative to hovered frame
             hoveredAnnotationSamples: null,
             hoveredQuickSearchSamples: 0,
+            hoveredMarkedGoodSamples: 0,
+            hoveredMarkedSuspiciousSamples: 0,
+            hoveredMarkedBadSamples: 0,
             hoveredAnnotationMaxSamples: 1,
 
             // width of a single character in a frame rect
@@ -17397,9 +17592,9 @@ const Mark = {
                 return;
             }
             let x = width * (rect.x + this.offsetX) * this.zoomX;
-            let x2 = Math.round(x + rect.w * width * this.zoomX);
+            let x2 = Math.floor(x + rect.w * width * this.zoomX);
 
-            x = Math.round(x);
+            x = Math.floor(x);
 
             if (x2 < 0 || x > width) {
                 return;
@@ -17743,6 +17938,9 @@ const Mark = {
                     this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
                     this.hoveredAnnotationMaxSamples = frame.samples;
                     this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
+                    this.hoveredMarkedGoodSamples = this.hoveredAnnotationSamples[MARK_GOOD];
+                    this.hoveredMarkedSuspiciousSamples = this.hoveredAnnotationSamples[MARK_SUCPICIOUS];
+                    this.hoveredMarkedBadSamples = this.hoveredAnnotationSamples[MARK_BAD];
                 }
             } else {
                 this.hoveredAnnotationSamples = null;
@@ -17817,6 +18015,18 @@ const Mark = {
                     frame.annotationSamples[QUICK_SEARCH] = 0;
                 }
 
+                // Toggling marked annotations
+                frame.annotationSamples[MARK_GOOD] = 0;
+                frame.annotationSamples[MARK_SUCPICIOUS] = 0;
+                frame.annotationSamples[MARK_BAD] = 0;
+
+                if (frame.mark) {
+                    const markSymbol = Mark._symbols[frame.mark];
+                    if (markSymbol) {
+                        frame.annotationSamples[markSymbol] = frame.samples;
+                    }
+                }
+
                 const rect = this.frameData.findRectForFrame(frame);
                 const parentRect = this.frameData.findRectForFrame(parentFrame);
                 rect.annotationIndex = annotatedIndex;
@@ -17837,6 +18047,10 @@ const Mark = {
                 const childAnnotationSamplesSums = {};
                 childAnnotationSamplesSums[QUICK_SEARCH] = 0;
 
+                childAnnotationSamplesSums[MARK_GOOD] = 0;
+                childAnnotationSamplesSums[MARK_SUCPICIOUS] = 0;
+                childAnnotationSamplesSums[MARK_BAD] = 0;
+
                 frame.childFrames.forEach(childFrame => {
                     const childAnnotationSamples = annotateFrame(childFrame, frame);
                     for (let i = 0; i < this.annotations.length; i++) {
@@ -17848,6 +18062,10 @@ const Mark = {
                         }
                     }
                     childAnnotationSamplesSums[QUICK_SEARCH] += childAnnotationSamples[QUICK_SEARCH];
+
+                    childAnnotationSamplesSums[MARK_GOOD] += childAnnotationSamples[MARK_GOOD];
+                    childAnnotationSamplesSums[MARK_SUCPICIOUS] += childAnnotationSamples[MARK_SUCPICIOUS];
+                    childAnnotationSamplesSums[MARK_BAD] += childAnnotationSamples[MARK_BAD];
                 });
 
                 for (let i = 0; i < this.annotations.length; i++) {
@@ -17858,6 +18076,15 @@ const Mark = {
                 }
                 if (frame.annotationSamples[QUICK_SEARCH] === 0) {
                     frame.annotationSamples[QUICK_SEARCH] = childAnnotationSamplesSums[QUICK_SEARCH];
+                }
+                if (frame.annotationSamples[MARK_GOOD] === 0) {
+                    frame.annotationSamples[MARK_GOOD] = childAnnotationSamplesSums[MARK_GOOD];
+                }
+                if (frame.annotationSamples[MARK_SUCPICIOUS] === 0) {
+                    frame.annotationSamples[MARK_SUCPICIOUS] = childAnnotationSamplesSums[MARK_SUCPICIOUS];
+                }
+                if (frame.annotationSamples[MARK_BAD] === 0) {
+                    frame.annotationSamples[MARK_BAD] = childAnnotationSamplesSums[MARK_BAD];
                 }
 
                 return frame.annotationSamples;
@@ -17875,6 +18102,9 @@ const Mark = {
             this.annotationMaxSamples = relativeFrame.samples;
             this.annotationSamples = relativeFrame.annotationSamples;
             this.quickSearchSamples = this.annotationSamples[QUICK_SEARCH];
+            this.markedGoodSamples = this.annotationSamples[MARK_GOOD];
+            this.markedSuspiciousSamples = this.annotationSamples[MARK_SUCPICIOUS];
+            this.markedBadSamples = this.annotationSamples[MARK_BAD];
         },
 
         repairFrame(frame) {
@@ -19079,22 +19309,29 @@ FrameTableOverview_component.options.__file = "src/ui/components/FrameTableOverv
         },
 
         loadJsonReport(json, name) {
-            if (json.type === 'flame-graph-reader') {
-                try {
+            try {
+                if (json.type === 'flame-graph-reader') {
                     return this.loadFlameGraphReaderFormat(json);
-                } catch (e) {
-                    console.error('Could not load flame graph from json', e);
-                    throw e;
-                }
-            } else {
-                try {
+                }if (this.isNodeProfPreprocessedReport(json)) {
+                    return this.loadNodeProfPreprocessedFormat(json, name);
+                } else {
                     return this.loadFlameGraphFromJfrJson(json, name);
-                } catch (e) {
-                    console.error('Could not load flame graph from json', e);
-                    throw e;
                 }
+            } catch (e) {
+                console.error('Could not load flame graph from json', e);
+                throw e;
             }
-            throw new Error('Unrecognized format');
+        },
+
+        loadNodeProfPreprocessedFormat(json, name) {
+            const frameData = parseNodeProfPreprocessedReport(json);
+            this.reportCounter += 1;
+            return {
+                name,
+                id: this.reportCounter,
+                frameData,
+                comparedWith: null
+            };
         },
 
         loadFlameGraphReaderFormat(json) {
@@ -19129,6 +19366,16 @@ FrameTableOverview_component.options.__file = "src/ui/components/FrameTableOverv
             } catch (e) {
                 return null;
             }
+        },
+
+        isNodeProfPreprocessedReport(json) {
+            const keys = ['code', 'functions', 'ticks', 'scripts'];
+            for (let i = 0; i < keys.length; i++) {
+                if (!json.hasOwnProperty(keys[i])) {
+                    return false;
+                }
+            }
+            return true;
         },
 
         closeFlameGraph(index) {
