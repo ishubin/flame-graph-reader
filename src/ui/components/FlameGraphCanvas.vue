@@ -68,6 +68,9 @@
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-annotation-${annotationIndex}`">
                                             <label :for="`chk-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
+                                        <th v-if="markedBadSamples > 0"> <i class="fa fa-thumbs-down"/> Bad</th>
+                                        <th v-if="markedSuspiciousSamples > 0"> <i class="fa fa-question-circle"/> Suspicious</th>
+                                        <th v-if="markedGoodSamples > 0"> <i class="fa fa-thumbs-up"/> Good</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -76,6 +79,9 @@
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{annotationSamples[annotation.name] | samplesToPercent(annotationMaxSamples) }}</span>
                                         </td>
+                                        <td v-if="markedBadSamples > 0">{{markedBadSamples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td v-if="markedSuspiciousSamples > 0">{{markedSuspiciousSamples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td v-if="markedGoodSamples > 0">{{markedGoodSamples | samplesToPercent(annotationMaxSamples) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -114,11 +120,16 @@ import {createGridFromRects} from '../grid';
 
 
 const QUICK_SEARCH = Symbol('Quick Search');
+const MARK_GOOD = Symbol('Mark good');
+const MARK_SUCPICIOUS = Symbol('Mark suspicious');
+const MARK_BAD = Symbol('Mark bad');
 
 const Mark = {
     Good: 'good',
     Suspicious: 'suspicious',
     Bad: 'bad',
+
+    _symbols: { },
 
     hueFor(mark) {
         if (mark === Mark.Good) {
@@ -140,6 +151,11 @@ const Mark = {
         return '\uD83D\uDC4E';
     }
 };
+
+
+Mark._symbols[Mark.Good] = MARK_GOOD;
+Mark._symbols[Mark.Suspicious] = MARK_SUCPICIOUS;
+Mark._symbols[Mark.Bad] = MARK_BAD;
 
 
 export default {
@@ -186,6 +202,9 @@ export default {
             // calculated annotated samples relative to zoomed in rect
             annotationSamples: {},
             quickSearchSamples: 0,
+            markedGoodSamples: 0,
+            markedSuspiciousSamples: 0,
+            markedBadSamples: 0,
             annotationMaxSamples: 1,
 
             // calculated annotated samples relative to hovered frame
@@ -265,9 +284,9 @@ export default {
                 return;
             }
             let x = width * (rect.x + this.offsetX) * this.zoomX;
-            let x2 = Math.round(x + rect.w * width * this.zoomX);
+            let x2 = Math.floor(x + rect.w * width * this.zoomX);
 
-            x = Math.round(x);
+            x = Math.floor(x);
 
             if (x2 < 0 || x > width)  {
                 return;
@@ -687,6 +706,18 @@ export default {
                     frame.annotationSamples[QUICK_SEARCH] = 0;
                 }
 
+                // Toggling marked annotations
+                frame.annotationSamples[MARK_GOOD] = 0;
+                frame.annotationSamples[MARK_SUCPICIOUS] = 0;
+                frame.annotationSamples[MARK_BAD] = 0;
+
+                if (frame.mark) {
+                    const markSymbol = Mark._symbols[frame.mark];
+                    if (markSymbol) {
+                        frame.annotationSamples[markSymbol] = frame.samples;
+                    }
+                }
+
                 const rect = this.frameData.findRectForFrame(frame);
                 const parentRect = this.frameData.findRectForFrame(parentFrame);
                 rect.annotationIndex = annotatedIndex;
@@ -707,6 +738,11 @@ export default {
                 const childAnnotationSamplesSums = {};
                 childAnnotationSamplesSums[QUICK_SEARCH] = 0;
 
+                childAnnotationSamplesSums[MARK_GOOD] = 0;
+                childAnnotationSamplesSums[MARK_SUCPICIOUS] = 0;
+                childAnnotationSamplesSums[MARK_BAD] = 0;
+
+
                 frame.childFrames.forEach(childFrame => {
                     const childAnnotationSamples = annotateFrame(childFrame, frame);
                     for (let i = 0; i < this.annotations.length; i++) {
@@ -718,6 +754,10 @@ export default {
                         }
                     }
                     childAnnotationSamplesSums[QUICK_SEARCH] += childAnnotationSamples[QUICK_SEARCH];
+
+                    childAnnotationSamplesSums[MARK_GOOD] += childAnnotationSamples[MARK_GOOD];
+                    childAnnotationSamplesSums[MARK_SUCPICIOUS] += childAnnotationSamples[MARK_SUCPICIOUS];
+                    childAnnotationSamplesSums[MARK_BAD] += childAnnotationSamples[MARK_BAD];
                 });
 
                 for (let i = 0; i < this.annotations.length; i++) {
@@ -728,6 +768,15 @@ export default {
                 }
                 if (frame.annotationSamples[QUICK_SEARCH] === 0) {
                     frame.annotationSamples[QUICK_SEARCH] = childAnnotationSamplesSums[QUICK_SEARCH];
+                }
+                if (frame.annotationSamples[MARK_GOOD] === 0) {
+                    frame.annotationSamples[MARK_GOOD] = childAnnotationSamplesSums[MARK_GOOD];
+                }
+                if (frame.annotationSamples[MARK_SUCPICIOUS] === 0) {
+                    frame.annotationSamples[MARK_SUCPICIOUS] = childAnnotationSamplesSums[MARK_SUCPICIOUS];
+                }
+                if (frame.annotationSamples[MARK_BAD] === 0) {
+                    frame.annotationSamples[MARK_BAD] = childAnnotationSamplesSums[MARK_BAD];
                 }
 
                 return frame.annotationSamples;
@@ -745,6 +794,9 @@ export default {
             this.annotationMaxSamples = relativeFrame.samples;
             this.annotationSamples = relativeFrame.annotationSamples;
             this.quickSearchSamples = this.annotationSamples[QUICK_SEARCH];
+            this.markedGoodSamples = this.annotationSamples[MARK_GOOD];
+            this.markedSuspiciousSamples = this.annotationSamples[MARK_SUCPICIOUS];
+            this.markedBadSamples = this.annotationSamples[MARK_BAD];
         },
 
         repairFrame(frame) {
