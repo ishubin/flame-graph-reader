@@ -604,15 +604,11 @@ export default {
                 const frame = this.frameData.findFrameById(foundRect.id);
                 this.hoveredFrame.frame = frame;
                 if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
-
-                    // The following code severely effects performance for large flamegrpahs
-                    // so disabled it temporarily
-
-                    // const ctx = this.$refs.canvas.getContext('2d');
-                    // if (previousHoveredRect) {
-                    //     this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
-                    // }
-                    // this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+                    const ctx = this.$refs.canvas.getContext('2d');
+                    if (previousHoveredRect) {
+                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+                    }
+                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                     
                     this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
                     this.hoveredAnnotationMaxSamples = frame.samples;
