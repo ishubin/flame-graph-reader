@@ -7,6 +7,7 @@
     "start": "NODE_ENV=development nodemon --watch src/  -e 'js, html, vue' --exec 'npm run build-dev; babel-node src/server/server.js'",
     "init-dev": "mkdir -p uploads",
     "build-dev": "npm run init-dev; webpack --config webpack.build.dev.js",
+    "build": "npm run init-dev; webpack --config webpack.config.js",
     "init-dist": "mkdir -p dist; rm -rf dist/*; cp -r public/* dist/.",
     "test": "mocha-webpack --webpack-config webpack.config.js test/**/*.spec.js test/*.spec.js"
   },
