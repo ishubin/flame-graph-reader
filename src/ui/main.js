@@ -19,8 +19,7 @@ function route(name, path, component) {
 
 
 const routes = [
-    route('Home', '/', HomeView),
-    route('Home for github pages', '/flame-graph-reader', HomeView),
+    route('Home', '*', HomeView),
 ];
 
 const router = new VueRouter({ mode: 'history', routes: routes });

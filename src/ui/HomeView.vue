@@ -34,6 +34,7 @@
                 <span class="btn btn-primary" v-if="flameGraphs.length > 1" @click="compareGraphsModal.shown = true">Compare Flame Graphs</span>
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="repairBrokenFramesWarningShown = true">Repair Broken Frames</span>
                 <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="saveFlameGraph(flameGraphs[activeReportIndex])">Save</span>
+                <span v-if="flameGraphs.length > 0 && activeReportIndex >= 0 && activeReportIndex < flameGraphs.length" class="btn btn-primary" @click="exportHTML(flameGraphs[activeReportIndex])">Export as HTML</span>
             </div>
         </div>
         <div v-if="mode === 'table-mode'">
@@ -133,10 +134,57 @@ import AnnotationsEditor from './components/AnnotationEditor.vue';
 import FrameTableOverview from './components/FrameTableOverview.vue';
 
 
+
+function createStandaloneHtml(reportJson) {
+    let baseUrl = window.location.toString();
+    if (baseUrl.charAt(baseUrl.length - 1) === '/') {
+        baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+
+    const jsonText = JSON.stringify(reportJson);
+
+    return `
+        <!-- This Source Code Form is subject to the terms of the Mozilla Public
+            License, v. 2.0. If a copy of the MPL was not distributed with this
+            file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Flame Graph Reader</title>
+            <link rel="stylesheet" href="${baseUrl}/main.css">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        </head>
+        <body>
+            <div id="app"></div>
+
+            <script>
+            window.standaloneFlameGraph = ${jsonText};
+            <\/script>
+
+            <script src="${baseUrl}\/bundle.js"><\/script>
+        <\/body>
+        <\/html>
+    `;
+}
+
 export default {
     components: {FlameGraphCanvas, AnnotationsEditor, Modal, FrameTableOverview},
 
     mounted() {
+        // checking if this html page is actually a standalone exported html flame graph
+        if (window.standaloneFlameGraph) {
+            this.isLoadingFlameGraph = true;
+            // doing this so that Vue is able to show loading popup. Otherwise it gets stuck
+            // $nextTick did not do the trick for some reason
+            setTimeout(() => {
+                const flameGraph = this.loadFlameGraphReaderFormat(window.standaloneFlameGraph);
+                this.flameGraphs.push(flameGraph);
+                this.activeReportIndex = this.flameGraphs.length - 1;
+                this.isLoadingFlameGraph = false;
+            }, 50);
+        }
     },
 
     beforeDestroy() {
@@ -382,6 +430,26 @@ export default {
         },
 
         saveFlameGraph(flameGraphReport) {
+            const json = this.convertReportToJson(flameGraphReport);
+
+            this.forceFileDownload(flameGraphReport.name + '.flamegraph.json', 'application/json', JSON.stringify(json));
+        },
+
+        forceFileDownload(name, contentType, text) {
+            const link = document.createElement('a');
+            document.body.appendChild(link);
+
+            try {
+                link.href = `data:${contentType};base64,` + btoa(text);
+                link.download = name;
+                link.click();
+            } catch(e) {
+                console.error(e);
+            }
+            setTimeout(() => document.body.removeChild(link), 100);
+        },
+
+        convertReportToJson(flameGraphReport) {
             const json = {
                 type: 'flame-graph-reader',
                 version: '1',
@@ -393,17 +461,13 @@ export default {
                 json.annotations = this.annotations;
             }
 
-            const link = document.createElement('a');
-            document.body.appendChild(link);
+            return json;
+        },
 
-            try {
-                link.href = 'data:application/json;base64,' + btoa(JSON.stringify(json));
-                link.download = flameGraphReport.name + '.flamegraph.json';
-                link.click();
-            } catch(e) {
-                console.error(e);
-            }
-            setTimeout(() => document.body.removeChild(link), 100);
+        exportHTML(flameGraphReport) {
+            const json = this.convertReportToJson(flameGraphReport);
+            const html = createStandaloneHtml(json)
+            this.forceFileDownload(flameGraphReport.name + '.flamegraph.html', 'text/html', html);
         },
 
         toggleTabRename(reportIndex) {
