@@ -484,6 +484,16 @@ export function parseNodeProfPreprocessedReport(json) {
             return 'unknown';
         }
 
+        // ignoring CODE types as we are mostly interested in JS part and it makes it difficult to read flame graphs with it
+        if (code.type ===  'CODE') {
+            return null;
+        }
+        if (code.type === 'SHARED_LIB') {
+            return '(lib) ' + code.name;
+        }
+        if (code.type === 'JS') {
+            return code.name;
+        }
         return code.type + ' ' + code.name;
     };
 
@@ -491,7 +501,10 @@ export function parseNodeProfPreprocessedReport(json) {
         const tick = json.ticks[i];
         const frames = [];
         for (let j = tick.s.length - 1; j >=0; j -= 1) {
-            frames.push(codeToFrameName(tick.s[j]));
+            const name = codeToFrameName(tick.s[j]);
+            if (name) {
+                frames.push(name);
+            }
         }
         addFramesToFrame(rootFrame, frames, 1);
     }
