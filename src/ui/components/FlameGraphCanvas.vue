@@ -49,6 +49,9 @@
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-hovered-annotation-${annotationIndex}`">
                                             <label :for="`chk-hovered-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
+                                        <th class="marked-bad" v-if="hoveredMarkedBadSamples > 0"> <i class="fa fa-thumbs-down"/> Bad</th>
+                                        <th class="marked-suspicious" v-if="hoveredMarkedSuspiciousSamples > 0"> <i class="fa fa-question-circle"/> Suspicious</th>
+                                        <th class="marked-good" v-if="hoveredMarkedGoodSamples > 0"> <i class="fa fa-thumbs-up"/> Good</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -57,6 +60,9 @@
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{hoveredAnnotationSamples[annotation.name] | samplesToPercent(hoveredAnnotationMaxSamples) }}</span>
                                         </td>
+                                        <td class="marked-bad" v-if="hoveredMarkedBadSamples > 0">{{hoveredMarkedBadSamples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
+                                        <td class="marked-suspicious" v-if="hoveredMarkedSuspiciousSamples > 0">{{hoveredMarkedSuspiciousSamples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
+                                        <td class="marked-good" v-if="hoveredMarkedGoodSamples > 0">{{hoveredMarkedGoodSamples | samplesToPercent(hoveredAnnotationMaxSamples) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -68,9 +74,9 @@
                                             <input type="checkbox" v-model="annotation.enabled" :id="`chk-annotation-${annotationIndex}`">
                                             <label :for="`chk-annotation-${annotationIndex}`">{{annotation.name}}</label>
                                         </th>
-                                        <th v-if="markedBadSamples > 0"> <i class="fa fa-thumbs-down"/> Bad</th>
-                                        <th v-if="markedSuspiciousSamples > 0"> <i class="fa fa-question-circle"/> Suspicious</th>
-                                        <th v-if="markedGoodSamples > 0"> <i class="fa fa-thumbs-up"/> Good</th>
+                                        <th class="marked-bad" v-if="markedBadSamples > 0"> <i class="fa fa-thumbs-down"/> Bad</th>
+                                        <th class="marked-suspicious" v-if="markedSuspiciousSamples > 0"> <i class="fa fa-question-circle"/> Suspicious</th>
+                                        <th class="marked-good" v-if="markedGoodSamples > 0"> <i class="fa fa-thumbs-up"/> Good</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -79,9 +85,9 @@
                                         <td v-for="annotation in annotations">
                                             <span v-if="annotation.enabled">{{annotationSamples[annotation.name] | samplesToPercent(annotationMaxSamples) }}</span>
                                         </td>
-                                        <td v-if="markedBadSamples > 0">{{markedBadSamples | samplesToPercent(annotationMaxSamples) }}</td>
-                                        <td v-if="markedSuspiciousSamples > 0">{{markedSuspiciousSamples | samplesToPercent(annotationMaxSamples) }}</td>
-                                        <td v-if="markedGoodSamples > 0">{{markedGoodSamples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td class="marked-bad" v-if="markedBadSamples > 0">{{markedBadSamples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td class="marked-suspicious" v-if="markedSuspiciousSamples > 0">{{markedSuspiciousSamples | samplesToPercent(annotationMaxSamples) }}</td>
+                                        <td class="marked-good" v-if="markedGoodSamples > 0">{{markedGoodSamples | samplesToPercent(annotationMaxSamples) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -210,6 +216,9 @@ export default {
             // calculated annotated samples relative to hovered frame
             hoveredAnnotationSamples: null,
             hoveredQuickSearchSamples: 0,
+            hoveredMarkedGoodSamples: 0,
+            hoveredMarkedSuspiciousSamples: 0,
+            hoveredMarkedBadSamples: 0,
             hoveredAnnotationMaxSamples: 1,
 
             // width of a single character in a frame rect
@@ -632,6 +641,9 @@ export default {
                     this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
                     this.hoveredAnnotationMaxSamples = frame.samples;
                     this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
+                    this.hoveredMarkedGoodSamples = this.hoveredAnnotationSamples[MARK_GOOD];
+                    this.hoveredMarkedSuspiciousSamples = this.hoveredAnnotationSamples[MARK_SUCPICIOUS];
+                    this.hoveredMarkedBadSamples = this.hoveredAnnotationSamples[MARK_BAD];
                 }
             } else {
                 this.hoveredAnnotationSamples = null;

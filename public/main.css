@@ -255,6 +255,16 @@ ul.tabs .tab.tab-add-new input[type='file'] {
     background: #efefef;
 }
 
+.flame-graph-details-panel table .marked-good {
+    background: #77f897;
+}
+.flame-graph-details-panel table .marked-suspicious {
+    background: #fff461;
+}
+.flame-graph-details-panel table .marked-bad {
+    background: #fc7b69;
+}
+
 /********************** Welcome page ************************/
 .welcome {
     padding: 20px;
