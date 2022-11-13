@@ -30,7 +30,7 @@
     "vue-router": "^2.7.0",
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10",
+    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
