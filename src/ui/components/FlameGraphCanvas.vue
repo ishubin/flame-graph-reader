@@ -3,14 +3,36 @@
      file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
 <template>
     <div class="flame-graph-canvas">
-        <canvas ref="canvas" width="1200" height="700"
-            style=""
-            @dblclick="onCanvasDoubleClick"
-            @click="onCanvasClick"
+        <div class="flame-graph-canvas-wrapper"
             @mousemove="onCanvasMouseMove"
             @mouseout="onCanvasMouseOut"
             @contextmenu="onRightClick"
-            ></canvas>
+            @dblclick="onCanvasDoubleClick"
+            @click="onCanvasClick"
+        >
+            <canvas ref="canvas" width="1200" height="700"></canvas>
+
+            <div class="flame-graph-canvas-hover-rect" v-if="hoveredFrame.rect"
+                :style="{top: `${hoveredFrame.top}px`, left: `${hoveredFrame.left}px`, width: `${hoveredFrame.width}px`, height: `0px`}"
+                @dblclick="onCanvasDoubleClick"
+                @click="onCanvasClick"
+                ></div>
+            <div class="flame-graph-canvas-hover-rect" v-if="hoveredFrame.rect"
+                :style="{top: `${hoveredFrame.top + hoveredFrame.height}px`, left: `${hoveredFrame.left}px`, width: `${hoveredFrame.width}px`, height: `0px`}"
+                @dblclick="onCanvasDoubleClick"
+                @click="onCanvasClick"
+                ></div>
+            <div class="flame-graph-canvas-hover-rect side" v-if="hoveredFrame.rect"
+                :style="{top: `${hoveredFrame.top}px`, left: `${hoveredFrame.left}px`, width: `0px`, height: `${hoveredFrame.height}px`}"
+                @dblclick="onCanvasDoubleClick"
+                @click="onCanvasClick"
+                ></div>
+            <div class="flame-graph-canvas-hover-rect side" v-if="hoveredFrame.rect"
+                :style="{top: `${hoveredFrame.top}px`, left: `${hoveredFrame.left + hoveredFrame.width}px`, width: `0px`, height: `${hoveredFrame.height}px`}"
+                @dblclick="onCanvasDoubleClick"
+                @click="onCanvasClick"
+                ></div>
+        </div>
 
         <div class="flame-graph-details-panel">
             <table width="100%">
@@ -185,7 +207,12 @@ export default {
 
             hoveredFrame: {
                 rect: null,
-                frame: null
+                frame: null,
+
+                left: 0,
+                top: 0,
+                width: 0,
+                height: 0
             },
 
             zoomedInRect: null,
@@ -204,6 +231,7 @@ export default {
                 name: '',
                 frameId: null
             },
+
 
             // calculated annotated samples relative to zoomed in rect
             annotationSamples: {},
@@ -242,7 +270,7 @@ export default {
             const canvas = this.$refs.canvas;
             const ctx = canvas.getContext('2d');
 
-            const width = window.innerWidth;
+            const width = window.innerWidth - 20;
             const height = (this.frameData.rootFrame.maxDepth + 2) * frameHeight;
 
             this.canvasWidth = width;
@@ -270,6 +298,35 @@ export default {
             for (let i = 0; i < this.frameData.rects.length; i++) {
                 this.drawFrameRect(ctx, this.frameData.rects[i], width, height, frameHeight);
             }
+        },
+
+        hoverFrameRect(rect, width, height, frameHeight) {
+            let y = Math.floor(rect.d * frameHeight);
+            if (this.settings.inverted) {
+                y = Math.floor(height - (rect.d + 1) * frameHeight);
+            }
+            if (y < 0 || y > height) {
+                return;
+            }
+            let x = width * (rect.x + this.offsetX) * this.zoomX;
+            let x2 = Math.floor(x + rect.w * width * this.zoomX);
+
+            x = Math.floor(x);
+
+            if (x2 < 0 || x > width)  {
+                return;
+            }
+            if (x < 0) {
+                x = 0;
+            }
+            if (x2 > width) {
+                x2 = width;
+            }
+
+            this.hoveredFrame.left = x;
+            this.hoveredFrame.top = y;
+            this.hoveredFrame.width = Math.max(1, x2-x);
+            this.hoveredFrame.height = frameHeight;
         },
 
         drawFrameRect(ctx, rect, width, height, frameHeight) {
@@ -622,6 +679,9 @@ export default {
         },
 
         onCanvasMouseMove(event) {
+            if (event.target.classList.contains('flame-graph-canvas-hover-rect')) {
+                return;
+            }
             const {x, y} = this.fromCanvasCoords(event.offsetX, event.offsetY);
 
             const foundRect = this.findRectAtPoint(x, y);
@@ -631,13 +691,10 @@ export default {
                 this.hoveredFrame.rect = foundRect;
                 const frame = this.frameData.findFrameById(foundRect.id);
                 this.hoveredFrame.frame = frame;
+
                 if (previousHoveredRect && previousHoveredRect.id !== foundRect.id || !previousHoveredRect) {
-                    const ctx = this.$refs.canvas.getContext('2d');
-                    if (previousHoveredRect) {
-                        this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
-                    }
-                    this.drawFrameRect(ctx, foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
-                    
+                    this.hoverFrameRect(foundRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
+
                     this.hoveredAnnotationSamples = this.hoveredFrame.frame.annotationSamples;
                     this.hoveredAnnotationMaxSamples = frame.samples;
                     this.hoveredQuickSearchSamples = this.hoveredAnnotationSamples[QUICK_SEARCH];
@@ -649,24 +706,22 @@ export default {
                 this.hoveredAnnotationSamples = null;
 
                 if (this.hoveredFrame.rect) {
-                    const previousHoveredRect = this.hoveredFrame.rect;
                     // hovered over void, deselecting rect
                     this.hoveredFrame.rect = null;
                     this.hoveredFrame.frame = null;
-                    const ctx = this.$refs.canvas.getContext('2d');
-                    this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                 }
             }
         },
 
-        onCanvasMouseOut() {
+        onCanvasMouseOut(event) {
+            if (event.target.classList.contains('flame-graph-canvas-hover-rect')) {
+                return;
+            }
+
             if (this.hoveredFrame.rect) {
-                const previousHoveredRect = this.hoveredFrame.rect;
                 // hovered over void, deselecting rect
                 this.hoveredFrame.rect = null;
                 this.hoveredFrame.frame = null;
-                const ctx = this.$refs.canvas.getContext('2d');
-                this.drawFrameRect(ctx, previousHoveredRect, this.canvasWidth, this.canvasHeight, this.getFrameHeight());
                 this.hoveredAnnotationSamples = null;
             }
         },
