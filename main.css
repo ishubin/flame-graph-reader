@@ -194,6 +194,7 @@ ul.tabs .tab.tab-add-new input[type='file'] {
 
 .header {
     position: fixed;
+    z-index: 100;
     margin: 0;
     padding: 0;
     top: 0;
